@@ -13,9 +13,6 @@ working_paper <- function(...) {
   )
 
   ret_val$inherits <- 'pdf_book'
-<<<<<<< HEAD
 
   ret_val
-=======
->>>>>>> ee0aa8c796423ae67985a2a0d6f56a5104e18833
 }
