@@ -309,13 +309,6 @@ $endif$
      \thispagestyle{plain}\raggedright\baselineskip=1.2cm
      {\fontsize{24.88}{30}\sffamily\textbf{\expandafter{\@title}}}\vspace{1cm}\par
         }}
-\def\titlepage{{\cover\newpage\pageone\newpage\blindtitle}}
-
-\def\blind{\def\titlepage{{\blindtitle}}\let\maketitle\blindtitle}
-\def\titlepageonly{\def\titlepage{{\pageone\end{document}}}}
-\def\nocover{\def\titlepage{{\pageone\newpage\blindtitle}}\let\maketitle\titlepage}
-\let\maketitle\titlepage
-\makeatother
 
 %% SPACING
 \RequirePackage{setspace}
