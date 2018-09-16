@@ -16,16 +16,13 @@ jelcodes: C10,C14,C22
 blind: false
 cover: true
 toc: false
-bibliography: references.bib
-biblio-style: authoryear-comp
 output:
-  MonashEBSTemplates::workingpaper:
+  kpbtemplates::working_paper:
     fig_caption: yes
     fig_height: 5
     fig_width: 8
     keep_tex: yes
     number_sections: yes
-    citation_package: biblatex
 ---
 
 ```{r setup, include=FALSE}
@@ -42,7 +39,4 @@ knitr::opts_chunk$set(
 
 In a famous paper, @BC64 introduced a family of transformations \dots
 
-```{r histogram, fig.cap="Nice histogram", message=FALSE, warning=FALSE}
-qplot(exp(rnorm(200)))
-```
 
