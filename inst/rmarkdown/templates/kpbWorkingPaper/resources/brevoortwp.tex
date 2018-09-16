@@ -417,12 +417,12 @@ $endif$
 \AtEveryBibitem{\clearfield{month}}
 \AtEveryCitekey{\clearfield{month}}
 
-\makeatletter
-\DeclareDelimFormat[cbx@textcite]{nameyeardelim}{\addspace}
-\makeatother
-\renewcommand*{\finalnamedelim}{%
+%\makeatletter
+%\DeclareDelimFormat[cbx@textcite]{nameyeardelim}{\addspace}
+%\makeatother
+%\renewcommand*{\finalnamedelim}{%
   %\ifnumgreater{\value{liststop}}{2}{\finalandcomma}{}% there really should be no funny Oxford comma business here
-  \addspace\&\space}
+%  \addspace\&\space}
 
 
 $if(wpnumber)$
