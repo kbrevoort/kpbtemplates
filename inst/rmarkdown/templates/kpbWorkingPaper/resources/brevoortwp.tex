@@ -296,25 +296,6 @@ $endif$
 \def\showjel{{\large\textsf{\textbf{JEL classification:}}~\@jel}}
 \def\nojel{\def\showjel{}}
 \def\addresses#1{\gdef\@addresses{#1}}\def\@addresses{??}
-\def\cover{{\sffamily\setcounter{page}{0}
-        \thispagestyle{empty}%
-        \vspace*{-2cm}
-        \centerline{\raisebox{-1.8cm}{\includegraphics[width=5cm]{MBSportrait}}\hspace*{9cm} ISSN 1440-771X}\vspace{0.99cm}
-        \begin{center}\Large
-        Department of Econometrics and Business Statistics\\[.5cm]
-        \scriptsize http://business.monash.edu/econometrics-and-business-statistics/research/publications
-        \end{center}\vspace{2cm}
-        \begin{center}
-        \fbox{\parbox{14cm}{\begin{onehalfspace}\centering\Huge\vspace*{0.3cm}
-                \textsf{\textbf{\expandafter{\@title}}}\vspace{1cm}\par
-                \LARGE\@author\end{onehalfspace}
-        }}
-        \end{center}
-        \vfill
-                \begin{center}\Large
-                \Month~\Year\\[1cm]
-                Working Paper \@wp
-        \end{center}}}
 \def\pageone{{\sffamily\setstretch{1}%
         \thispagestyle{empty}%
         \vbox to \textheight{%
@@ -434,8 +415,6 @@ $else$
 \nojel
 $endif$
 
-$if(cover)$$else$\nocover$endif$
-$if(blind)$\blind$endif$
 $if(blind)$$else$\author{$for(author)$$author.othernames$~$author.familyname$$sep$, $endfor$}$endif$
 $if(blind)$$else$\addresses{$for(author)$
 \textbf{$author.othernames$ $author.familyname$}\newline
