@@ -28,6 +28,7 @@
 \urlstyle{same}  % don't use monospace font for urls
 \usepackage{geometry}
 \geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage[]{biblatex}
 \usepackage{longtable,booktabs}
 % Fix footnotes in tables (requires footnote package)
 \IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{long table}}{}
@@ -285,6 +286,9 @@ blah, blah
 
 \section{Introduction}\label{introduction}
 
-In a famous paper, @BC64 introduced a family of transformations \dots
+In a famous paper, \textcite{BC64} introduced a family of
+transformations \dots
+
+\printbibliography
 
 \end{document}

@@ -1,4 +1,4 @@
-\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,$if(lang)$$babel-lang$,$endif$$if(papersize)$$papersize$$else$a4paper$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
+\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,$if(lang)$$babel-lang$,$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{$documentclass$}
 $if(fontfamily)$
 \usepackage[$for(fontfamilyoptions)$$fontfamilyoptions$$sep$,$endfor$]{$fontfamily$}
 $else$
@@ -118,16 +118,23 @@ $for(polyglossia-otherlangs)$
 $endfor$
 \fi
 $endif$
-$if(natbib)$
-\usepackage{natbib}
-\bibliographystyle{$if(biblio-style)$$biblio-style$$else$plainnat$endif$}
-$endif$
-$if(biblatex)$
-\usepackage[$if(biblio-style)$style=$biblio-style$,$endif$$for(biblatexoptions)$$biblatexoptions$$sep$,$endfor$]{biblatex}
-$for(bibliography)$
+
+% I will use biblatex for the bibliography
+\usepackage[
+backend=bibtex,
+style=authoryear,
+bibencoding=ascii,
+minnames=1,
+maxnames=4,
+dashed=false,
+firstinits=false,
+sorting=nyt
+]{biblatex}
+
+$if(bibliography)$
 \addbibresource{$bibliography$}
-$endfor$
 $endif$
+
 $if(listings)$
 \usepackage{listings}
 $endif$
@@ -379,10 +386,10 @@ $endif$
 
 %% BIBLIOGRAPHY
 
-\makeatletter
-\@ifpackageloaded{biblatex}{}{\usepackage[style=authoryear-comp, backend=biber, natbib=true]{biblatex}}
-\makeatother
-\ExecuteBibliographyOptions{bibencoding=utf8,minnames=1,maxnames=3, maxbibnames=99,dashed=false,terseinits=true,giveninits=true,uniquename=false,uniquelist=false,doi=false, isbn=false,url=true,sortcites=false}
+%\makeatletter
+%\@ifpackageloaded{biblatex}{}{\usepackage[style=authoryear-comp, backend=biber, natbib=true]{biblatex}}
+%\makeatother
+%\ExecuteBibliographyOptions{bibencoding=utf8,minnames=1,maxnames=3, maxbibnames=99,dashed=false,terseinits=true,giveninits=true,uniquename=false,uniquelist=false,doi=false, isbn=false,url=true,sortcites=false}
 
 \DeclareFieldFormat{url}{\texttt{\url{#1}}}
 \DeclareFieldFormat[article]{pages}{#1}
@@ -470,46 +477,11 @@ $keywords$
 \end{keywords}
 $endif$
 
-$for(include-before)$
-$include-before$
-
-$endfor$
-$if(toc)$
-{
-$if(colorlinks)$
-\hypersetup{linkcolor=$if(toccolor)$$toccolor$$else$black$endif$}
-$endif$
-\setcounter{tocdepth}{$toc-depth$}
-\tableofcontents
-}
-$endif$
-$if(lot)$
-\listoftables
-$endif$
-$if(lof)$
-\listoffigures
-$endif$
 $body$
 
-$if(natbib)$
 $if(bibliography)$
-$if(biblio-title)$
-$if(book-class)$
-\renewcommand\bibname{$biblio-title$}
-$else$
-\renewcommand\refname{$biblio-title$}
+\newpage
+\printbibliography[heading=bibintoc,title={References}]
 $endif$
-$endif$
-\bibliography{$for(bibliography)$$bibliography$$sep$,$endfor$}
 
-$endif$
-$endif$
-$if(biblatex)$
-\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
-
-$endif$
-$for(include-after)$
-$include-after$
-
-$endfor$
 \end{document}
