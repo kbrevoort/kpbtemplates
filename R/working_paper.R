@@ -3,9 +3,14 @@
 #' This function sets the default for my working paper format.
 #' @export
 working_paper <- function(...) {
-  template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp.tex",
-                          package="kpbtemplates")
-  bookdown::pdf_document2(...,
-                          template = template
+  tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp.tex",
+                              package="kpbtemplates")
+  ret_val <- bookdown::pdf_document2(...,
+                                     template = tex_template,
+                                     toc = FALSE,
+                                     citation_package = 'biblatex',
+                                     latex_engine = 'pdflatex'
   )
+
+  ret_val$inherits <- 'pdf_book'
 }
