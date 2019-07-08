@@ -1,28 +1,19 @@
 ---
-title: "Our great idea"
-author:
-- familyname: Troy
-  othernames: Helen
-  address: University of Greece\newline Athens
-  email: helen.troy@gmail.com
-  correspondingauthor: true
-- familyname: Khan
-  othernames: Genghis
-  address: Mongolian Institute
-abstract: "A brief summary of our ideas"
-keywords: "blah, blah"
-wpnumber: no/yr
-jelcodes: C10,C14,C22
-blind: false
-cover: true
-toc: false
-output:
-  kpbtemplates::working_paper:
-    fig_caption: yes
-    fig_height: 5
-    fig_width: 8
-    keep_tex: yes
-    number_sections: yes
+title: "Paper Title"
+author: 
+- name: "Kenneth P. Brevoort"
+  affil: "First Workplace"
+  email: "ken@brevoort.com"
+  thanks: "Thanks to me."
+- name: "Second Author"
+  affil: "Second Workplace"
+  email: "joe@mail.com"
+firstdate: "July 1, 1776"
+date: "July 4, 2019"
+abstract:  "`r stringi::stri_rand_lipsum(1)`"
+keywords: "something, something else"
+jel:  "L10, Y5"
+output: kpbtemplates::working_paper
 ---
 
 ```{r setup, include=FALSE}
@@ -37,6 +28,13 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-In a famous paper, @BC64 introduced a family of transformations \dots
+`r stringi::stri_rand_lipsum(1)`
 
+```{r lorem, results='asis'}
+cat(paste(stringi::stri_rand_lipsum(4), collapse = '\n\n\n'))
+```
+
+```{r histogram, fig.cap="Nice histogram", message=FALSE, warning=FALSE}
+ggplot2::qplot(exp(rnorm(200)))
+```
 

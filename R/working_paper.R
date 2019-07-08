@@ -3,7 +3,7 @@
 #' This function sets the default for my working paper format.
 #' @export
 working_paper <- function(...) {
-  tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp.tex",
+  tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp2.tex",
                               package="kpbtemplates")
   ret_val <- bookdown::pdf_document2(...,
                                      template = tex_template,

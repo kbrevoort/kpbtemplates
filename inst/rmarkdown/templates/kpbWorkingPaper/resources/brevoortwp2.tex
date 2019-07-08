@@ -1,0 +1,164 @@
+\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx,color,ae,fancyvrb}
+\usepackage[T1]{fontenc}
+\usepackage{framed}
+\usepackage{wallpaper}
+\usepackage[none]{hyphenat}
+\usepackage{fancyhdr}
+\usepackage[letterpaper,left=1in,right=1in,top=1.2in,bottom=1.25in,footskip=.6in]{geometry}
+\usepackage[inline]{enumitem}
+\usepackage{amssymb}
+\usepackage[geometry]{ifsym}
+\usepackage{tocbibind}
+\usepackage{tocloft}
+\usepackage{sectsty}
+\usepackage{booktabs}
+\usepackage[all]{nowidow}
+\usepackage{tgschola}
+\usepackage{lscape}
+\usepackage{scrextend}
+\usepackage{authblk}
+\usepackage{hyperref}
+\usepackage{lipsum}
+
+% Use Biblatex for the bibliography
+\usepackage[backend=bibtex,
+            style=authoryear,
+            bibencoding=ascii,
+            minnames=1,
+            maxnames=4,
+            dashed=false,
+            firstinits=false,
+            sorting=nyt]{biblatex}
+
+$if(bibliography)$
+\addbibresource{$bibliography$}
+$endif$
+
+% This block comes from Rob Hyndman's blog
+\DeclareFieldFormat{url}{Available online at {\color{hyperblue} \url{#1}}}
+\DeclareFieldFormat[article]{pages}{#1}
+\DeclareFieldFormat[inproceedings]{pages}{\lowercase{pp.}#1}
+\DeclareFieldFormat[incollection]{pages}{\lowercase{pp.}#1}
+%\DeclareFieldFormat[article]{volume}{\mkbibbold{#1}}
+%\DeclareFieldFormat[article]{number}{\mkbibparens{#1}}
+\DeclareFieldFormat[article]{title}{\MakeCapital{#1}}
+\DeclareFieldFormat[article]{url}{}
+\DeclareFieldFormat[book]{url}{}
+\DeclareFieldFormat[inbook]{url}{}
+\DeclareFieldFormat[incollection]{url}{}
+\DeclareFieldFormat[inproceedings]{url}{}
+\DeclareFieldFormat[techreport]{url}{}
+\DeclareFieldFormat[inproceedings]{title}{#1}
+\DeclareFieldFormat{shorthandwidth}{#1}
+\renewbibmacro{in:}{%   Removes In: for an article
+  \ifentrytype{article}{}{%
+  \printtext{\bibstring{in}\intitlepunct}}}
+%\AtEveryBibitem{\clearfield{month}}
+\AtEveryCitekey{\clearfield{month}}
+
+% Use 1.5 spacing
+\usepackage{setspace}
+%\onehalfspacing
+\singlespacing
+
+% Paragraph formatting
+%\setlength{\parindent}{24pt}
+\setlength{\parskip}{1em}
+
+\setlength{\affilsep}{0em}  % No additional space between author and affiliation
+% Redefine the maketitle function
+\makeatletter
+\def\@maketitle{%
+  \newpage
+  \null
+  \vskip 2em%
+  \begin{center}%
+  \let \footnote \thanks
+    {\LARGE \@title \par}%
+    \vskip 4.5em%
+    {\large
+      \lineskip .5em%
+      \begin{tabular}[t]{c}%
+        \@author
+      \end{tabular}\par}%
+    \vskip 2em%
+    {\large \@date}%
+  \end{center}%
+  \par
+  \vskip 1.5em}
+\makeatother
+
+% Place a dot after each section heading number
+\makeatletter
+\renewcommand{\@seccntformat}[1]{\csname the#1\endcsname.\quad}
+\makeatother
+
+$if(title)$
+\title{$title$}
+$endif$
+$if(subtitle)$
+\providecommand{\subtitle}[1]{}
+\subtitle{$subtitle$}
+$endif$
+
+$if(author)$
+$for(author)$
+\author{$author.name$%
+        $if(author.thanks)$\thanks{%
+            $if(author.email)$Email: $author.email$. $endif$%
+            $author.thanks$}%
+        $else$%
+            $if(author.email)$\thanks{Email:  $author.email$.}$endif$%
+        $endif$}
+\affil{$author.affil$}
+$endfor$
+$endif$
+
+$if(firstdate)$
+\date{First Version:  $firstdate$ \\[0.5em] This Version:  $date$}
+$else$
+\date{$date$}
+$endif$
+
+$preamble$
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% START DOCUMENT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+$if(abstract)$
+\begin{abstract}
+$abstract$
+\end{abstract}
+\smallskip
+$endif$
+
+$if(keywords)$
+\hspace{4mm}\textbf{Keywords:}  $keywords$
+\smallskip
+$endif$
+
+$if(jel)$
+\hspace{4mm}\textbf{JEL Classificiation:} $jel$
+$endif$
+
+\clearpage
+\pagenumbering{arabic}
+\doublespacing
+\raggedright
+\setlength\parindent{4em}
+
+$body$
+
+$if(bibliography)$
+\newpage
+\printbibliography[heading=bibintoc,title={References}]
+$endif$
+
+\end{document}
