@@ -23,7 +23,7 @@
 \usepackage{lipsum}
 
 % Use Biblatex for the bibliography
-\usepackage[backend=bibtex,
+\usepackage[backend=biber,
             style=authoryear,
             bibencoding=ascii,
             minnames=1,
@@ -32,8 +32,12 @@
             firstinits=false,
             sorting=nyt]{biblatex}
 
-$if(bibliography)$
-\addbibresource{$bibliography$}
+$if(zotero2r)$
+  \addbibresource[datatype=bibtex]{zotero2rbiblatex.bib}
+$else$
+  $if(bibliography)$
+    \addbibresource[datatype=bibtex]{$bibliography$}
+  $endif$
 $endif$
 
 % This block comes from Rob Hyndman's blog
@@ -96,7 +100,7 @@ $endif$
 \makeatother
 
 $if(title)$
-\title{$title$}
+\title{$title$$if(disclaimer)$\thanks{$disclaimer$}$endif$}
 $endif$
 $if(subtitle)$
 \providecommand{\subtitle}[1]{}
@@ -122,6 +126,14 @@ $else$
 \date{$date$}
 $endif$
 
+$if(classify)$
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textbf{$classify$}}
+$endif$
+
 $preamble$
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,7 +142,10 @@ $preamble$
 
 \begin{document}
 \maketitle
-\thispagestyle{empty}
+\thispagestyle{fancy}
+$if(classify)$
+\rhead{\textbf{$classify$}}
+$endif$
 
 $if(abstract)$
 \begin{abstract}
@@ -156,9 +171,14 @@ $endif$
 
 $body$
 
-$if(bibliography)$
-\newpage
-\printbibliography[heading=bibintoc,title={References}]
+$if(zotero2r)$
+  \newpage
+  \printbibliography
+$else$
+  $if(bibliography)$
+    \newpage
+    \printbibliography[title={References}]
+  $endif$
 $endif$
 
 \end{document}

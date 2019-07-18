@@ -1,31 +1,19 @@
 ---
-title: "Our great idea"
+title: Paper Title
 author:
-- familyname: Troy
-  othernames: Helen
-  address: University of Greece\newline Athens
-  email: helen.troy@gmail.com
-  correspondingauthor: true
-- familyname: Khan
-  othernames: Genghis
-  address: Mongolian Institute
-abstract: "A brief summary of our ideas"
-keywords: "blah, blah"
-wpnumber: no/yr
-jelcodes: C10,C14,C22
-blind: false
-cover: true
-toc: false
-bibliography: references.bib
-biblio-style: authoryear-comp
-output:
-  MonashEBSTemplates::workingpaper:
-    fig_caption: yes
-    fig_height: 5
-    fig_width: 8
-    keep_tex: yes
-    number_sections: yes
-    citation_package: biblatex
+- name: Kenneth P. Brevoort
+  affil:  Federal Reserve Board
+  email: kenneth.p.brevoort@frb.gov
+  thanks: Thanks to me.
+firstdate: July 4, 1776
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+zotero2r: true
+abstract:  "`r stringi::stri_rand_lipsum(1)`"
+keywords: "something, something else"
+jel:  "L10, Y5"
+classify:  DRAFT
+disclaimer: The opinions expressed in this paper are those of the author and do not necessarily represent those of the Federal Reserve Board or its staff.
+output: kpbtemplates::working_paper
 ---
 
 ```{r setup, include=FALSE}
