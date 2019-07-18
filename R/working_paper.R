@@ -1,6 +1,8 @@
 #' Working Paper
 #'
 #' This function sets the default for my working paper format.
+#' @importFrom bookdown pdf_document2
+#' @importFrom zotero2r create_bibliography
 #' @export
 working_paper <- function(...) {
   tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp2.tex",
