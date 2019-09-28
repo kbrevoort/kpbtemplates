@@ -5,3 +5,8 @@
 junk.*
 kpbtemplates.Rproj
 Untitled
+*.bcf
+*.log
+*.pdf
+*.xml
+*.gz
