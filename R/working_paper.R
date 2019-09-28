@@ -5,19 +5,27 @@
 #' @importFrom zotero2r create_bibliography
 #' @export
 working_paper <- function(...) {
+  #browser()
   tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp2.tex",
                               package="kpbtemplates")
+
+  yaml_front_matter <- get_from_parent_frame('yaml_front_matter')
+  cite_package <- 'biblatex'
+  if (!any(c('bibliography', 'zotero2r') %in% tolower(names(yaml_front_matter))))
+    cite_package <- 'none'
+
   ret_val <- bookdown::pdf_document2(...,
                                      template = tex_template,
                                      toc = FALSE,
-                                     citation_package = 'biblatex',
+                                     citation_package = cite_package,
                                      latex_engine = 'pdflatex'
   )
+
+  #ret_val$post_processor <- function(metadata, input, output, clean, verbose) browser()
 
   ret_val$inherits <- 'pdf_book'
 
   # Check if zotero2r is to be used.  If so, create the bibliography file.
-  yaml_front_matter <- get_from_parent_frame('yaml_front_matter')
   if ('zotero2r' %in% tolower(names(yaml_front_matter))) {
     if (!is.logical(yaml_front_matter$zotero2r) | yaml_front_matter$zotero2r != FALSE) {
       rmd_file <- get_from_parent_frame('original_input')
