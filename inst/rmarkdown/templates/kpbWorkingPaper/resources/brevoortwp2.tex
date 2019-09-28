@@ -40,15 +40,7 @@
             firstinits=false,
             sorting=nyt]{biblatex}
 
-$if(zotero2r)$
-  \addbibresource[datatype=bibtex]{zotero2rbiblatex.bib}
-$else$
-  $if(bibliography)$
-    \addbibresource[datatype=bibtex]{$bibliography$}
-  $endif$
-$endif$
-
-% This block comes from Rob Hyndman's blog
+  % This block comes from Rob Hyndman's blog
 \DeclareFieldFormat{url}{Available online at {\color{hyperblue} \url{#1}}}
 \DeclareFieldFormat[article]{pages}{#1}
 \DeclareFieldFormat[inproceedings]{pages}{\lowercase{pp.}#1}
@@ -70,6 +62,16 @@ $endif$
 %\AtEveryBibitem{\clearfield{month}}
 \AtEveryCitekey{\clearfield{month}}
 
+$if(zotero2r)$
+  \addbibresource[datatype=bibtex]{zotero2rbiblatex.bib}
+$else$
+  $if(bibliography)$
+    \addbibresource[datatype=bibtex]{$bibliography$}
+  $endif$
+$endif$
+
+
+
 % Use 1.5 spacing
 \usepackage{setspace}
 %\onehalfspacing
@@ -77,7 +79,7 @@ $endif$
 
 % Paragraph formatting
 %\setlength{\parindent}{24pt}
-\setlength{\parskip}{1em}
+\setlength{\parskip}{0em}
 
 \setlength{\affilsep}{0em}  % No additional space between author and affiliation
 % Redefine the maketitle function
@@ -140,6 +142,7 @@ $if(classify)$
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{\textbf{$classify$}}
+\setlength{\headheight}{14pt}
 $endif$
 
 $preamble$
@@ -173,6 +176,7 @@ $endif$
 
 \clearpage
 \pagenumbering{arabic}
+\fancyfoot[C]{\thepage}
 \doublespacing
 \raggedright
 \setlength\parindent{4em}
