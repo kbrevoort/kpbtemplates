@@ -11,7 +11,7 @@
         left=$if(margins.left)$$margins.left$$else$1in$endif$,
         right=$if(margins.right)$$margins.right$$else$1in$endif$,
         top=$if(margins.top)$$margins.top$$else$1.2in$endif$,
-        bottom=$if(margins.bottom)$$margins.bottom$$else$1.25in$endif$,
+        bottom=$if(margins.bottom)$$margins.bottom$$else$0.8in$endif$,
         footskip=$if(margins.footskip)$$margins.footskip$$else$.6in$endif$
     $endif$]{geometry}
 \usepackage[inline]{enumitem}
@@ -180,7 +180,7 @@ $endif$
 \fancyfoot[C]{\thepage}
 \doublespacing
 \raggedright
-\setlength\parindent{4em}
+\setlength\parindent{1.5em}
 
 $body$
 
