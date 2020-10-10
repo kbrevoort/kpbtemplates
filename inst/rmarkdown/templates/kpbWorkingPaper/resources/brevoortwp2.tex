@@ -1,17 +1,18 @@
-\documentclass[$if(fontsize)$$fontsize$$else$11pt$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{article}
+\documentclass[$if(fontsize)$$fontsize$$else$12pt$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx,color,ae,fancyvrb}
 \usepackage[T1]{fontenc}
 \usepackage{framed}
 \usepackage{wallpaper}
-\usepackage[none]{hyphenat}
+\usepackage{ragged2e}
+%\usepackage[none]{hyphenat}
 \usepackage{fancyhdr}
 \usepackage[letterpaper,%
     $if(margins)$
-        left=$if(margins.left)$$margins.left$$else$1in$endif$,
-        right=$if(margins.right)$$margins.right$$else$1in$endif$,
-        top=$if(margins.top)$$margins.top$$else$1.2in$endif$,
-        bottom=$if(margins.bottom)$$margins.bottom$$else$0.8in$endif$,
+        left=$if(margins.left)$$margins.left$$else$1.5in$endif$,
+        right=$if(margins.right)$$margins.right$$else$1.5in$endif$,
+        top=$if(margins.top)$$margins.top$$else$1.5in$endif$,
+        bottom=$if(margins.bottom)$$margins.bottom$$else$1.5in$endif$,
         footskip=$if(margins.footskip)$$margins.footskip$$else$.6in$endif$
     $endif$]{geometry}
 \usepackage[inline]{enumitem}
@@ -161,8 +162,9 @@ $endif$
 
 $if(abstract)$
 \begin{abstract}
-$abstract$
+\justify $abstract$
 \end{abstract}
+\RaggedRight
 \smallskip
 $endif$
 
@@ -179,7 +181,7 @@ $endif$
 \pagenumbering{arabic}
 \fancyfoot[C]{\thepage}
 \doublespacing
-\raggedright
+\RaggedRight
 \setlength\parindent{1.5em}
 
 $body$
