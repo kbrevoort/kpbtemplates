@@ -14,6 +14,12 @@
         top=$if(margins.top)$$margins.top$$else$1.5in$endif$,
         bottom=$if(margins.bottom)$$margins.bottom$$else$1.5in$endif$,
         footskip=$if(margins.footskip)$$margins.footskip$$else$.6in$endif$
+    $else$
+        left=1in,
+        right=1in,
+        top=1.2in,
+        bottom=0.8in,
+        footskip=0.6in
     $endif$]{geometry}
 \usepackage[inline]{enumitem}
 \usepackage{amssymb}
@@ -31,6 +37,7 @@
 \usepackage{lipsum}
 \usepackage{float}  % used for floating figures
 \usepackage{tabu}   % necessary for full_width kableExtra tables
+\usepackage{ragged2e}
 
 % Use Biblatex for the bibliography
 \usepackage[backend=biber,
@@ -40,6 +47,9 @@
             maxnames=4,
             dashed=false,
             firstinits=false,
+            isbn=false, 
+            issn=false, 
+            doi=false,
             sorting=nyt]{biblatex}
 
   % This block comes from Rob Hyndman's blog
@@ -161,6 +171,7 @@ $if(classify)$
 $endif$
 
 $if(abstract)$
+\justifying
 \begin{abstract}
 \justify $abstract$
 \end{abstract}
