@@ -13,13 +13,13 @@
         right=$if(margins.right)$$margins.right$$else$1.5in$endif$,
         top=$if(margins.top)$$margins.top$$else$1.5in$endif$,
         bottom=$if(margins.bottom)$$margins.bottom$$else$1.5in$endif$,
-        footskip=$if(margins.footskip)$$margins.footskip$$else$.6in$endif$
+        footskip=$if(margins.footskip)$$margins.footskip$$else$0.75in$endif$
     $else$
-        left=1in,
-        right=1in,
-        top=1.2in,
-        bottom=0.8in,
-        footskip=0.6in
+        left=1.5in,
+        right=1.5in,
+        top=1.5in,
+        bottom=1.5in,
+        footskip=0.75in
     $endif$]{geometry}
 \usepackage[inline]{enumitem}
 \usepackage{amssymb}
@@ -46,9 +46,9 @@
             minnames=1,
             maxnames=4,
             dashed=false,
-            firstinits=false,
-            isbn=false, 
-            issn=false, 
+            giveninits=false,
+            isbn=false,
+            issn=false,
             doi=false,
             sorting=nyt]{biblatex}
 
@@ -154,7 +154,7 @@ $if(classify)$
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{\textbf{$classify$}}
-\setlength{\headheight}{14pt}
+\setlength{\headheight}{15pt}
 $endif$
 
 $preamble$
