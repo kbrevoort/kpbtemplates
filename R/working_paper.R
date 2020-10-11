@@ -4,7 +4,7 @@
 #' @importFrom bookdown pdf_document2
 #' @importFrom zotero2r create_bibliography
 #' @export
-working_paper <- function(...) {
+working_paper <- function(..., latex_engine = 'pdflatex') {
   #browser()
   tex_template <- system.file("rmarkdown/templates/kpbworkingpaper/resources/brevoortwp2.tex",
                               package="kpbtemplates")
@@ -18,7 +18,7 @@ working_paper <- function(...) {
                                      template = tex_template,
                                      toc = FALSE,
                                      citation_package = cite_package,
-                                     latex_engine = 'pdflatex'
+                                     latex_engine = latex_engine
   )
 
   #ret_val$post_processor <- function(metadata, input, output, clean, verbose) browser()
