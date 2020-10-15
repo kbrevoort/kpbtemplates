@@ -1,4 +1,5 @@
 \documentclass[$if(fontsize)$$fontsize$$else$12pt$endif$,$for(classoption)$$classoption$$sep$,$endfor$]{article}
+%\usepackage{sectsty}  % This is causing a warning
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx,color,ae,fancyvrb}
 \usepackage[T1]{fontenc}
@@ -9,14 +10,14 @@
 \usepackage{fancyhdr}
 \usepackage[letterpaper,%
     $if(margins)$
-        left=$if(margins.left)$$margins.left$$else$1.5in$endif$,
-        right=$if(margins.right)$$margins.right$$else$1.5in$endif$,
+        left=$if(margins.left)$$margins.left$$else$1.25in$endif$,
+        right=$if(margins.right)$$margins.right$$else$1.25in$endif$,
         top=$if(margins.top)$$margins.top$$else$1.5in$endif$,
         bottom=$if(margins.bottom)$$margins.bottom$$else$1.5in$endif$,
         footskip=$if(margins.footskip)$$margins.footskip$$else$0.75in$endif$
     $else$
-        left=1.5in,
-        right=1.5in,
+        left=1.25in,
+        right=1.25in,
         top=1.5in,
         bottom=1.5in,
         footskip=0.75in
@@ -26,7 +27,6 @@
 \usepackage[geometry]{ifsym}
 \usepackage{tocbibind}
 \usepackage{tocloft}
-\usepackage{sectsty}
 \usepackage{booktabs}
 \usepackage[all]{nowidow}
 \usepackage{tgschola}
@@ -38,7 +38,12 @@
 \usepackage{float}  % used for floating figures
 \usepackage{tabu}   % necessary for full_width kableExtra tables
 \usepackage{ragged2e}
+\usepackage{colortbl}
 
+
+$if(csl)$
+  % CSL file specified, so I will not use biblatex
+$else$
 % Use Biblatex for the bibliography
 \usepackage[backend=biber,
             style=authoryear,
@@ -47,11 +52,12 @@
             maxnames=4,
             dashed=false,
             giveninits=false,
+            uniquename=init,
             isbn=false,
-            issn=false,
+            %issn=false,
             doi=false,
             sorting=nyt]{biblatex}
-
+\definecolor{hyperblue}{RGB}{1, 95, 151}
   % This block comes from Rob Hyndman's blog
 \DeclareFieldFormat{url}{Available online at {\color{hyperblue} \url{#1}}}
 \DeclareFieldFormat[article]{pages}{#1}
@@ -74,11 +80,17 @@
 %\AtEveryBibitem{\clearfield{month}}
 \AtEveryCitekey{\clearfield{month}}
 
+$endif$
+
+
 $if(zotero2r)$
   \addbibresource[datatype=bibtex]{zotero2rbiblatex.bib}
 $else$
-  $if(bibliography)$
-    \addbibresource[datatype=bibtex]{$bibliography$}
+  $if(csl)$
+  $else$
+    $if(bibliography)$
+      \addbibresource[datatype=bibtex]{$bibliography$}
+    $endif$
   $endif$
 $endif$
 
@@ -159,6 +171,16 @@ $endif$
 
 $preamble$
 
+\newenvironment{cslbibliography}
+    {%
+        \widowpenalties 1 10000%
+        \singlespacing%
+        \setlength{\parindent}{0em}%
+        \setlength{\parskip}{1em}%
+        \everypar{\hangindent0.5in}%
+    }
+    {}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% START DOCUMENT
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -201,9 +223,15 @@ $if(zotero2r)$
   \newpage
   \printbibliography
 $else$
-  $if(bibliography)$
-    \newpage
-    \printbibliography[title={References}]
+  $if(csl)$
+  \newpage
+  \singlespacing
+  \setlength\parindent{-0.5em}
+  $else$
+    $if(bibliography)$
+      \newpage
+      \printbibliography[title={References}]
+    $endif$
   $endif$
 $endif$
 
