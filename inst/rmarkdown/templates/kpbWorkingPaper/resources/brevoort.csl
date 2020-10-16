@@ -50,9 +50,19 @@
   <!-- MMMMMMMMMMMMMMMMMM -->
   <macro name="title">
       <choose>
-          <if type="book">
-              <text variable="title" font-style="italic" suffix="." text-case="title"/>
+          <if type="report">
+              <choose>
+                  <if variable="collection-title">
+                      <text variable="title" quotes="true" suffix="," text-case="title"/>
+                  </if>
+                  <else>
+                      <text variable="title" font-style="italic" suffix="." text-case="title"/>
+                  </else>
+              </choose>
           </if>
+          <else-if type="book">
+              <text variable="title" font-style="italic" suffix="." text-case="title"/>
+          </else-if>
           <else>
               <text variable="title" quotes="true" suffix="," text-case="title"/>
           </else>
@@ -77,6 +87,12 @@
           <if type="book chapter" match="any">
               <text variable="publisher"/>
           </if>
+          <else-if type="report">
+              <group delimiter=". ">
+                  <text variable="collection-title" font-style="italic"/>
+                  <text variable="publisher"/>
+              </group>
+          </else-if>
           <else>
               <text variable="container-title" font-style="italic"/>
           </else>
@@ -117,6 +133,17 @@
           <text variable="page"/>
       </group>
   </macro>  
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Web Link    MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="web-link">
+      <choose>
+          <if type="report">
+              <text variable="URL" prefix="Available at: " suffix="."/>
+          </if>
+      </choose> 
+  </macro>  
+
   <!-- ############################################ -->
   <!-- ### CITATION FORMAT                      ### -->
   <!-- ############################################ -->
@@ -149,6 +176,7 @@
                   <text macro="volume-issue"/>
                   <text macro="pages"/>
               </group>
+              <text macro="web-link"/>
           </group>
       </layout>
   </bibliography>
