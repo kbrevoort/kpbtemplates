@@ -26,7 +26,7 @@ working_paper <- function(..., latex_engine = 'pdflatex') {
 
   # Check for latex_engine in yaml_names
   if ('latex_engine' %in% yaml_names)
-    latex_engine == yaml_front_matter[['latex_engine']]
+    latex_engine <- yaml_front_matter[['latex_engine']]
 
   ret_val <- bookdown::pdf_document2(...,
                                      template = tex_template,
@@ -37,6 +37,7 @@ working_paper <- function(..., latex_engine = 'pdflatex') {
 
   #ret_val$pre_processor <- my_wp_preprocessor
   ret_val$post_processor <- my_wp_postprocessor
+  ret_val$pre_processor <- my_wp_preprocessor
   #browser()
 
   #ret_val$post_processor <- function(metadata, input, output, clean, verbose) browser()
@@ -66,6 +67,7 @@ get_from_parent_frame <- function(x) {
   all_frames <- sys.frames()
   for (i in all_frames) {
     if (x %in% rlang::env_names(i)) {
+      print(i)
       return(rlang::env_get(env = i, nm = x))
     }
   }
@@ -78,11 +80,18 @@ test_function <- function(metadata, input, output, clean, verbose) {
   browser()
 }
 
-find_csl_files <- function() {
+#' Use Default CSL
+#'
+#' A convenience function that allows users to use a default CSL file
+#' that is included with the package. The default is brevoort.csl, which
+#' is a custom CSL specification that I created.
+#' @return A character scalar giving the full path to brevoort.csl
+#' @export
+use_default_csl <- function() {
   package_path <- find.package('kpbtemplates')
 
   local_dir <- 'inst/rmarkdown/templates/kpbWorkingPaper/resources/'
-  my_csl <- 'canadian-journal-of-economics.csl'
+  my_csl <- 'brevoort.csl'
 
   if(!file.exists(file.path(package_path,
                             local_dir,
@@ -108,4 +117,30 @@ my_wp_postprocessor <- function(metadata, input, output, clean, verbose) {
   f <- bookdown::pdf_document2()$post_processor
   f(metadata, input, output, clean, verbose)
 
+}
+
+my_wp_preprocessor <- function(metadata, input_file, runtime, knit_meta, files_dir, output_dir) {
+  in_file <- readr::read_file(input_file) %>%
+    strsplit('\n') %>%
+    unlist()
+
+  # Find the end point of the YAML header
+  yaml_range <- which(in_file == '---')
+  if(length(yaml_range) < 2L) {
+    warning('Unable to find YAML header during preprocessing.')
+    return(NULL)
+  }
+
+  for(i in yaml_range[1L]:yaml_range[2L]) {
+    if (grepl('^csl:[[:space:]\"\']*default[[:space:]\"\']*$', in_file[i])) {
+      in_file[i] <- sprintf("csl: \"%s\"", use_default_csl())
+    } else if (grepl('^date:[[:space:]]*today[[:space:]]*$', in_file[i])) {
+      in_file[i] <- sprintf('date: \"%s\"', format(Sys.Date(), '%B %e, %Y'))
+    }
+  }
+
+  paste(in_file, collapse = '\n') %>%
+    readr::write_file(in_file, path = input_file)
+
+  NULL
 }

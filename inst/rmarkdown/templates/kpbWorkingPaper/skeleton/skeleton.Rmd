@@ -11,14 +11,15 @@ zotero2r: true
 abstract:  "`r stringi::stri_rand_lipsum(1)`"
 keywords: "something, something else"
 jel:  "L10, Y5"
+csl: default
 classify:  DRAFT
 disclaimer: The opinions expressed in this paper are those of the author and do not necessarily represent those of the Federal Reserve Board or its staff.
 margins:
-  left: 1in
-  right: 1in
-  top: 1.2in
-  bottom: 1.25in
-  footskip: .6in
+  left: 1.25in
+  right: 1.25in
+  top: 1.5in
+  bottom: 1.5in
+  footskip: 0.75in
 output: kpbtemplates::working_paper
 ---
 

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text" page-range-format="chicago">
+  <info>
+    <title>Default Template for kpbtemplates</title>
+    <id>http://www.github.com/kbrevoort/kpbtemplates</id>
+    <link href="http://www.github.com/kbrevoort/kpbtemplates" rel="self"/>
+    <author>
+      <name>Kenneth Brevoort</name>
+      <email>ken@brevoort.com</email>
+    </author>
+    <category citation-format="author-date"/>
+    <category field="social_science"/>
+    <updated>2020-10-15T00:59:23+00:00</updated>
+    <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
+  </info>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Author      MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="author">
+      <names variable="author">
+          <name form="long" and="text" initialize="false" name-as-sort-order="first"/>
+          <substitute>
+              <names variable="editor"/>
+              <text macro="title"/>
+          </substitute>
+      </names>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Editors             MM -->
+  <!-- MMMMMMMMMMMMMMMMMMMMMMMMMM -->
+  <macro name="editors">
+      <names variable="editor">
+          <name and="text" initialize-with="."/>
+      </names>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Last Name   MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="last-name">
+      <names variable="author">
+          <name form="short" and="text" initialize="false" />
+          <substitute>
+              <names variable="editor"/>
+              <text macro="title"/>
+          </substitute>
+      </names>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Title       MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="title">
+      <choose>
+          <if type="book">
+              <text variable="title" font-style="italic" suffix="." text-case="title"/>
+          </if>
+          <else>
+              <text variable="title" quotes="true" suffix="," text-case="title"/>
+          </else>
+      </choose>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  In Book     MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="in-book">
+      <choose>
+          <if type="chapter">
+              <text macro="editors" prefix="in " suffix=" (eds.) "/>
+              <text variable="container-title" font-style="italic"/>
+          </if>
+      </choose>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Source      MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="source">
+      <choose>
+          <if type="book chapter" match="any">
+              <text variable="publisher"/>
+          </if>
+          <else>
+              <text variable="container-title" font-style="italic"/>
+          </else>
+      </choose>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Volume-Issue      MM -->
+  <!-- MMMMMMMMMMMMMMMMMMMMMMMM -->
+  <macro name="volume-issue">
+      <choose>
+          <if type="article-journal">
+              <text variable="volume"/>
+              <text variable="issue" prefix="(" suffix=")"/>
+          </if>
+      </choose>
+  </macro>
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Issued Year MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="issued-year">
+      <choose>
+          <if variable="issued">
+              <date variable="issued">
+                  <date-part name="year"/>
+              </date>
+          </if>
+          <else>
+              <text term="no date"/>
+          </else>
+      </choose>
+  </macro>  
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <!-- MM  Pages       MM -->
+  <!-- MMMMMMMMMMMMMMMMMM -->
+  <macro name="pages">
+      <group delimiter=" ">
+          <label variable="page" form="short"/>
+          <text variable="page"/>
+      </group>
+  </macro>  
+  <!-- ############################################ -->
+  <!-- ### CITATION FORMAT                      ### -->
+  <!-- ############################################ -->
+  <citation et-al-min="3" et-al-use-first="1" disambiguate-add-givenname="true" disambiguate-add-names="true" disambiguate-add-year-suffix="true">
+      <sort>
+           <key macro="issued-year"/>
+      </sort>
+      <layout prefix="(" suffix=")" delimiter="; ">
+          <group delimiter=", ">
+              <text macro="last-name"/>
+              <text macro="issued-year"/>
+          </group>
+      </layout>
+  </citation>
+  <!-- ############################################ -->
+  <!-- ### BIBLIOGRAPHY FORMAT                  ### -->
+  <!-- ############################################ -->
+  <bibliography entry-spacing="0" hanging-indent="true">
+      <sort>
+          <key macro="author"/>
+      </sort>
+      <layout suffix=" ">
+          <group delimiter=" ">
+              <text macro="author"/>
+              <text macro="issued-year" prefix="(" suffix=")"/>
+              <text macro="title"/>
+              <text macro="in-book" suffix=". "/>
+              <group delimiter=", " suffix=".">
+                  <text macro="source"/>
+                  <text macro="volume-issue"/>
+                  <text macro="pages"/>
+              </group>
+          </group>
+      </layout>
+  </bibliography>
+</style>
+
