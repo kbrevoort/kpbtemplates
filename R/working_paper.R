@@ -67,17 +67,12 @@ get_from_parent_frame <- function(x) {
   all_frames <- sys.frames()
   for (i in all_frames) {
     if (x %in% rlang::env_names(i)) {
-      print(i)
       return(rlang::env_get(env = i, nm = x))
     }
   }
 
   #stop(paste0('Could not locate ', x))
   NULL
-}
-
-test_function <- function(metadata, input, output, clean, verbose) {
-  browser()
 }
 
 #' Use Default CSL
@@ -106,12 +101,11 @@ use_default_csl <- function() {
 }
 
 my_wp_postprocessor <- function(metadata, input, output, clean, verbose) {
-  #browser()
-  # This changes the TeX file
-  temp <- readr::read_file(output)
-  temp <- sub('\\cslBibliographyStartLine', '\\begin{cslbibliography}', temp)
-  temp <- sub('\\cslBibliographyEndLine', '\\end{cslbibliography}', temp)
-  temp <- readr::write_file(temp, output)
+  # Make necessary changes to the intermediate markdown file before processing
+  readr::read_file(output) %>%
+    replace_duplicate_punctuation() %>%
+    add_csl_environment() %>%
+    readr::write_file(output)
 
   # Now call the default post_processor function
   f <- bookdown::pdf_document2()$post_processor
@@ -143,4 +137,62 @@ my_wp_preprocessor <- function(metadata, input_file, runtime, knit_meta, files_d
     readr::write_file(in_file, path = input_file)
 
   NULL
+}
+
+#' Replace Duplicate Punctuation
+#'
+#' In some cases, CSL bibliographies may allow redundant punctuation.  For example,
+#' when an item's title ends in a question mark, this will frequently result in
+#' the title ending in a "?." which looks ugly.  This function searchs the bibliography
+#' for such duplicates and, when found, removes the second punctuation.
+#' @param x Character scalar that contains all the text in the intermediate markdown file
+#' @return Character scalar with the duplicate punctuation removed
+#' @importFrom stringr str_locate_all str_sub
+#' @importFrom purrr map_dfr
+#' @importFrom dplyr filter "%>%" distinct arrange
+replace_duplicate_punctuation <- function(x) {
+  all_dup_positions <- stringr::str_locate_all(x, '[!?][,.]')
+
+  all_starts <- stringr::str_locate_all(x, 'cslBibliographyStartLine')[[1]][,2L] %>%
+    unname()
+  all_ends <- stringr::str_locate_all(x, 'cslBibliographyEndLine')[[1]][, 1L] %>%
+    unname()
+
+  if (length(all_starts) != length(all_ends)) {
+    warning('There is an inconsistent number of bibliography start and end points.  Skipping replacement of duplicate punctuation.')
+    return(x)
+  }
+
+  all_doubles <- stringr::str_locate_all(x, '[!?][,.]')[[1L]] %>%
+    as.data.frame()
+  n <- dim(all_doubles)[1]
+  if (n == 0) return(x)    # If there are no duplicates, make no changes
+
+  doubles_in_bib <- purrr::map_dfr(c(1:length(all_starts)),
+                                   ~ dplyr::filter(all_doubles,
+                                                   start >= all_starts[.x],
+                                                   end <= all_ends[.x])) %>%
+    distinct() %>%
+    arrange(desc(end))
+
+  n <- dim(doubles_in_bib)[1]
+  if (n == 0) return(x)
+
+  for (i in 1:n)
+    stringr::str_sub(x, doubles_in_bib$end, doubles_in_bib$end) <- ''
+
+  x
+}
+
+#' Add CSL Environment
+#'
+#' Replaces the temporary place holders for the CSL environment with Latex-formatted
+#' begin and end designations.
+#' @param x Character scalar with the intermediate markdown file
+#' @return Character scalar with the intermediate markdown file with changes made.
+#' @importFrom dplyr "%>%"
+add_csl_environment <- function(x) {
+  x %>%
+    sub('\\cslBibliographyStartLine', '\\begin{cslbibliography}', .) %>%
+    sub('\\cslBibliographyEndLine', '\\end{cslbibliography}', .)
 }
