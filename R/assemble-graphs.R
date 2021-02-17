@@ -36,7 +36,7 @@ params2gp <- function(p, bs) {
 #' @importFrom ggplot2 is.ggplot
 #' @importFrom glue glue
 #' @importFrom gridtext textbox_grob
-build_label_grob <- function(label_type, plot, w = unit(6.5, 'in')) {
+build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
   if (!is.ggplot(plot))
     stop('build_label_grob only works with ggplot objects.')
 
@@ -67,12 +67,15 @@ build_y_grob <- function(plot, w) {
     }
   }
 
+  if (y_text == '')
+    return(NULL)
+
   params <- plot$theme$axis.title.y
   grob_y <- gridtext::textbox_grob(y_text,
                                    halign = 0,
                                    hjust = params$hjust,
                                    vjust = params$vjust,
-                                   width = unit(6.5, 'in'),
+                                   width = grid::unit(6.5, 'in'),
                                    padding = if (is.null(params$margin)) margin(0, 0, 0, 0) else params$margin,
                                    gp = params2gp(params,
                                                   plot$theme$text$size))
@@ -90,7 +93,7 @@ clean_plot_object <- function(plot, gbl) {
 #' @importFrom grid grobHeight convertHeight
 calculate_grob_heights <- function(grob) {
   if (is.ggplot(grob))
-    return(unit(1, 'null'))
+    return(grid::unit(1, 'null'))
 
   grid::grobHeight(grob) %>%
     grid::convertHeight('in', valueOnly = TRUE)
@@ -115,7 +118,7 @@ format_graph <- function(plot, w) {
   grob_list <- grob_list[!null_index]
 
   grob_table <- gridExtra::arrangeGrob(grobs = grob_list,
-                                       heights = unit(vapply(grob_list, calculate_grob_heights, 4.3),
+                                       heights = grid::unit(vapply(grob_list, calculate_grob_heights, 4.3),
                                                       ifelse(names(grob_list) == 'graph', 'null', 'in')),
                                        widths = w,
                                        ncol = 1L)
@@ -155,5 +158,14 @@ save_kpb_graph <- function(filename, plot = last_plot(), device = NULL, width = 
 
   grid::grid.newpage()
   grid::grid.draw(out_graph)
+}
+
+print_graph <- function(plot = last_plot(), width = 6.5, units = 'in') {
+  out_graph <- format_graph(plot, w = grid::unit(width, units))
+
+  grid::grid.newpage()
+  grid::grid.draw(out_graph)
+
+  invisible(NULL)
 }
 
