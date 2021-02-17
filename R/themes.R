@@ -1,3 +1,10 @@
+#' Presentation Theme
+#'
+#' This is a ggplot2 theme that I have prepared to format graphs in my
+#' preferred style for presentations, which uses larger fonts than would
+#' be appropriate in a printed graph.
+#' @importFrom ggplot2 theme theme_minimal margin element_text element_line element_blank
+#' @export
 theme_presentation <- function() {
 
   t <- theme(
