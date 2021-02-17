@@ -2,7 +2,7 @@
 #'
 #' Converts the elements of a elemnt_text specification from ggplot2 into the
 #' graphical parameter vector that is needed for grid graphics.
-#' @params p Parameter vector from a ggplot object, as specified in the plot's
+#' @param p Parameter vector from a ggplot object, as specified in the plot's
 #' theme.
 #' @param bs The base size of the fonts in the ggplot plot. This is necessary
 #' for cases where the font size in the parameter vector is expressed as a
