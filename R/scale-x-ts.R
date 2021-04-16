@@ -10,20 +10,39 @@
 #' @param freq Character scalar that determines the type of x-axis to
 #' be displayed.  Options are 'annual' (the default), 'quarterly', and
 #' 'monthly'.
+#' @param show_years Character scaler indicating which years to display
+#' on the x-axis as labels.  Options include:  'all', 'odd', and 'even'.
 #' @param name Character vector specifying the name of the axis to be
 #' displayed below the axis
 #' @param limits Date vector with two elements giving the minimum and
 #' maximum values to be shown on the x-axis.
+#' @param tick_color Vector of colors for the tick marks.  Up to three
+#' values can be provided.  The first is the color of the annual ticks,
+#' the second is the color of the quartly ticks and the thrid is the
+#' monthly tick color.  If only one color is provided, all the tick
+#' marks will have the same color.  Default value is c('black', 'gray',
+#' 'gray').
+#' @param tick_length A scalar number determining the length of the annual
+#' tick. Default value is 4L, which means the tick takes up 4 percent of
+#' the lenght of the y-axis (the unit used is always 'npc').
 #' @export
 scale_x_ts <- function(freq = 'annual',
                        show_years = 'even',
                        name = waiver(),
                        limits = NULL,
                        expand = waiver(),
-                       guide = waiver()) {
+                       guide = waiver(),
+                       tick_color = c('black', 'gray', 'gray'),
+                       tick_length = 4L) {
 
   freq <- match.arg(freq, c('annual', 'monthly', 'quarterly'))
   show_years <- match.arg(show_years, c('all', 'odd', 'even'))
+
+  if (length(tick_color) == 1L) {
+    tick_color <- rep(tick_color, 3L)
+  } else if (length(tick_color) == 2L) {
+    tick_color <- c(tick_color, tick_color[2L])
+  }
 
   list(geom_ts_scale(),
        .scale_x_ts(freq = freq,
@@ -32,7 +51,9 @@ scale_x_ts <- function(freq = 'annual',
                    limits = limits,
                    expand = expand,
                    guide = guide,
-                   position = 'bottom'))
+                   position = 'bottom',
+                   tick_colors = tick_color,
+                   tick_length = tick_length))
 }
 
 .scale_x_ts <- function(freq,
@@ -41,7 +62,9 @@ scale_x_ts <- function(freq = 'annual',
                         limits = NULL,
                         expand = waiver(),
                         guide = waiver(),
-                        position = 'bottom') {
+                        position = 'bottom',
+                        tick_colors = c('black', 'gray', 'gray'),
+                        tick_length = 4L) {
 
   sc <- continuous_scale(aesthetics = c('x', 'xmin', 'xmax', 'xend'),  # was aesthetics
                          scale_name = 'date', # was name
@@ -56,6 +79,8 @@ scale_x_ts <- function(freq = 'annual',
                          expand = expand,
                          position = position,
                          super = ScaleContinuousQuarter)
+  sc$set_colors(tick_colors)
+  sc$set_length(tick_length)
   sc$set_freq(freq)
   sc$set_sy(show_years)
   sc
@@ -69,6 +94,10 @@ ScaleContinuousQuarter <- ggproto(`_class` = "ScaleContinuousQuarter",
                                   `_inherit` = ggplot2::ScaleContinuousDate,
                                   freq = 'annual',
                                   show_years = 'even',
+                                  tick_colors = c('black', 'gray', 'gray'),
+                                  tick_length = 1L,
+                                  set_colors = function(self, x) self$tick_colors <- x,
+                                  set_length = function(self, x) self$tick_length <- x,
                                   set_sy = function(self, x) self$show_years <- x,
                                   set_freq = function(self, x) self$freq <- x,
                                   get_breaks = function(self, limits = self$get_limits()) {
@@ -112,17 +141,23 @@ draw_ts_scale <- function(data, panel_params, coord) {
   coords <- coord$transform(df, panel_params)
 
   grid::gTree(children = grid::gList(
-    make_single_polyline(filter(coords, .freq == 'annual'), 'black', 1L),
-    if ('quarterly' %in% to_process) make_single_polyline(subset(coords, .freq == 'quarterly'), 'gray', 1L) else NULL,
-    if ('monthly' %in% to_process) make_single_polyline(subset(coords, .freq == 'monthly'), 'gray', 1L) else NULL))
+    make_single_polyline(subset(coords, .freq == 'annual'),
+                         panel_params$x$scale$tick_colors[1L],
+                         panel_params$x$scale$tick_length),
+    if ('quarterly' %in% to_process) make_single_polyline(subset(coords, .freq == 'quarterly'),
+                                                          panel_params$x$scale$tick_colors[2L],
+                                                          panel_params$x$scale$tick_length) else NULL,
+    if ('monthly' %in% to_process) make_single_polyline(subset(coords, .freq == 'monthly'),
+                                                        panel_params$x$scale$tick_colors[3L],
+                                                        panel_params$x$scale$tick_length) else NULL))
 }
 
-make_single_polyline <- function(dt, color, width) {
+make_single_polyline <- function(dt, color, length, width = 1L) {
   if (length(dt$x) == 0)
     return(NULL)
 
   grid::polylineGrob(x = dt$x,
-                     y = dt$alt_y,
+                     y = dt$alt_y * length,
                      id = dt$ids,
                      default.units = 'npc',
                      arrow = NULL,
@@ -144,13 +179,13 @@ compute_quarterly_axis_data <- function(freq, dr, yr) {
   freq = match.arg(freq, c('annual', 'quarterly', 'monthly'))
   if (freq == 'quarterly') {
     drop_list <- 1L
-    leng = 4 / golden_ratio / 100
+    leng = 0.01 / golden_ratio
   } else if (freq == 'monthly') {
     drop_list <- c(1L, 4L, 7L, 10L)
-    leng <- 4 / golden_ratio / golden_ratio / 100
+    leng <- 0.01 / golden_ratio / golden_ratio
   } else {
     drop_list <- c(2L:12L)
-    leng <- 4 / 100
+    leng <- 0.01
   }
 
   py <- seq(from = as.Date(sprintf('%d-01-01', extract_year(dr[1L]))),
@@ -201,6 +236,8 @@ GeomTSScale <- ggproto("GeomTSScale",
 
 geom_ts_scale <- function(mapping = NULL, data = NULL, stat = "identity",
                           position = "identity", na.rm = FALSE,
+                          #tick_color = c('black', 'gray', 'gray'),
+                          #tick_length = 4L,
                           inherit.aes = TRUE, ...) {
 
   layer(geom = GeomTSScale,
@@ -210,5 +247,8 @@ geom_ts_scale <- function(mapping = NULL, data = NULL, stat = "identity",
         position = position,
         show.legend = FALSE,
         inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, ...))
+        params = list(na.rm = na.rm,
+                      #tick_color = tick_color,
+                      #tick_length = tick_length,
+                      ...))
 }
