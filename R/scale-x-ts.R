@@ -32,8 +32,10 @@ scale_x_ts <- function(freq = 'annual',
                        limits = NULL,
                        expand = waiver(),
                        guide = waiver(),
+                       tick_width = 1L,
                        tick_color = c('black', 'gray', 'gray'),
-                       tick_length = 4L) {
+                       tick_length = 4L,
+                       ...) {
 
   freq <- match.arg(freq, c('annual', 'monthly', 'quarterly'))
   show_years <- match.arg(show_years, c('all', 'odd', 'even'))
@@ -44,7 +46,22 @@ scale_x_ts <- function(freq = 'annual',
     tick_color <- c(tick_color, tick_color[2L])
   }
 
-  list(geom_ts_scale(),
+  if (length(tick_width) == 1L) {
+    tick_width <- rep(tick_width, 3L)
+  } else if (length(tick_width) == 2L) {
+    tick_width <- c(tick_width, tick_width[2L])
+  }
+
+  if (length(tick_length) == 1L) {
+    golden_ratio <- (1 + sqrt(5)) / 2
+    tick_length <- c(tick_length,
+                     tick_length / golden_ratio,
+                     tick_length / golden_ratio / golden_ratio)
+  } else if (length(tick_length) == 2L) {
+    tick_length <- c(tick_length, tick_length[2L] / golden_ratio)
+  }
+
+  list(geom_ts_scale(...),
        .scale_x_ts(freq = freq,
                    show_years = show_years,
                    name = name,
@@ -52,6 +69,7 @@ scale_x_ts <- function(freq = 'annual',
                    expand = expand,
                    guide = guide,
                    position = 'bottom',
+                   tick_width = tick_width,
                    tick_colors = tick_color,
                    tick_length = tick_length))
 }
@@ -63,8 +81,9 @@ scale_x_ts <- function(freq = 'annual',
                         expand = waiver(),
                         guide = waiver(),
                         position = 'bottom',
+                        tick_width = rep(1L, times = 3L),
                         tick_colors = c('black', 'gray', 'gray'),
-                        tick_length = 4L) {
+                        tick_length = rep(4L, times = 3L)) {
 
   sc <- continuous_scale(aesthetics = c('x', 'xmin', 'xmax', 'xend'),  # was aesthetics
                          scale_name = 'date', # was name
@@ -79,10 +98,16 @@ scale_x_ts <- function(freq = 'annual',
                          expand = expand,
                          position = position,
                          super = ScaleContinuousQuarter)
-  sc$set_colors(tick_colors)
-  sc$set_length(tick_length)
-  sc$set_freq(freq)
-  sc$set_sy(show_years)
+  sc$set_params(colors = tick_colors,
+                length = tick_length,
+                freq = freq,
+                show_years = show_years,
+                width = tick_width)
+  #sc$set_colors(tick_colors)
+  #sc$set_length(tick_length)
+  #sc$set_freq(freq)
+  #sc$set_sy(show_years)
+  #sc$set_width(tick_width)
   sc
 }
 
@@ -96,10 +121,18 @@ ScaleContinuousQuarter <- ggproto(`_class` = "ScaleContinuousQuarter",
                                   show_years = 'even',
                                   tick_colors = c('black', 'gray', 'gray'),
                                   tick_length = 1L,
-                                  set_colors = function(self, x) self$tick_colors <- x,
-                                  set_length = function(self, x) self$tick_length <- x,
-                                  set_sy = function(self, x) self$show_years <- x,
-                                  set_freq = function(self, x) self$freq <- x,
+                                  tick_width = rep(1L, times = 3L),
+                                  set_params = function(self, colors, length, show_years, freq, width) {
+                                    self$tick_colors <- colors
+                                    self$tick_length <- length
+                                    self$show_years <- show_years
+                                    self$freq <- freq
+                                    self$tick_width <- width
+                                  },
+                                  #set_colors = function(self, x) self$tick_colors <- x,
+                                  #set_length = function(self, x) self$tick_length <- x,
+                                  #set_sy = function(self, x) self$show_years <- x,
+                                  #set_freq = function(self, x) self$freq <- x,
                                   get_breaks = function(self, limits = self$get_limits()) {
                                     end_points <- as.Date(limits, origin = '1970-01-01')
                                     # This call should always use freq = 'annual'
@@ -135,21 +168,25 @@ draw_ts_scale <- function(data, panel_params, coord) {
   temp <- lapply(to_process,
                  compute_quarterly_axis_data,
                  dr = date_range,
-                 yr = panel_params$y.range)
+                 yr = panel_params$y.range,
+                 leng = panel_params$x$scale$tick_length)
   df <- do.call(rbind, temp)
 
   coords <- coord$transform(df, panel_params)
 
   grid::gTree(children = grid::gList(
     make_single_polyline(subset(coords, .freq == 'annual'),
-                         panel_params$x$scale$tick_colors[1L],
-                         panel_params$x$scale$tick_length),
+                         color = panel_params$x$scale$tick_colors[1L],
+                         length = panel_params$x$scale$tick_length[1L],
+                         width = panel_params$x$scale$tick_width[1L]),
     if ('quarterly' %in% to_process) make_single_polyline(subset(coords, .freq == 'quarterly'),
-                                                          panel_params$x$scale$tick_colors[2L],
-                                                          panel_params$x$scale$tick_length) else NULL,
+                                                          color = panel_params$x$scale$tick_colors[2L],
+                                                          length = panel_params$x$scale$tick_length[2L],
+                                                          width = panel_params$x$scale$tick_width[2L]) else NULL,
     if ('monthly' %in% to_process) make_single_polyline(subset(coords, .freq == 'monthly'),
-                                                        panel_params$x$scale$tick_colors[3L],
-                                                        panel_params$x$scale$tick_length) else NULL))
+                                                        color = panel_params$x$scale$tick_colors[3L],
+                                                        length = panel_params$x$scale$tick_length[3L],
+                                                        width = panel_params$x$scale$tick_width[3L]) else NULL))
 }
 
 make_single_polyline <- function(dt, color, length, width = 1L) {
@@ -157,7 +194,7 @@ make_single_polyline <- function(dt, color, length, width = 1L) {
     return(NULL)
 
   grid::polylineGrob(x = dt$x,
-                     y = dt$alt_y * length,
+                     y = dt$alt_y, #dt$alt_y * length,
                      id = dt$ids,
                      default.units = 'npc',
                      arrow = NULL,
@@ -172,20 +209,20 @@ extract_month <- function(x) {
   1 + as.POSIXlt(x)$mon
 }
 
-compute_quarterly_axis_data <- function(freq, dr, yr) {
+compute_quarterly_axis_data <- function(freq, dr, yr, leng) {
 
   golden_ratio <- (1 + sqrt(5)) / 2
 
   freq = match.arg(freq, c('annual', 'quarterly', 'monthly'))
   if (freq == 'quarterly') {
     drop_list <- 1L
-    leng = 0.01 / golden_ratio
+    leng = leng[2L] / 100#0.01 / golden_ratio
   } else if (freq == 'monthly') {
     drop_list <- c(1L, 4L, 7L, 10L)
-    leng <- 0.01 / golden_ratio / golden_ratio
+    leng <- leng[3L] / 100 #0.01 / golden_ratio / golden_ratio
   } else {
     drop_list <- c(2L:12L)
-    leng <- 0.01
+    leng <- leng[1L] / 100 #0.01
   }
 
   py <- seq(from = as.Date(sprintf('%d-01-01', extract_year(dr[1L]))),
@@ -251,4 +288,19 @@ geom_ts_scale <- function(mapping = NULL, data = NULL, stat = "identity",
                       #tick_color = tick_color,
                       #tick_length = tick_length,
                       ...))
+}
+
+#' @export
+ctrq <- function(x) {
+  temp <- as.POSIXlt(x)
+  temp$mday <- ifelse(temp$mon + 1L == 2L, 14L, 15L)
+  temp$mon <- (floor(temp$mon / 3) * 3) + 1L
+  temp
+}
+
+#' @export
+ctrm <- function(x) {
+  temp <- as.POSIXlt(x)
+  temp$mday <- ifelse(temp$mon + 1L == 2L, 14L, 15L)
+  temp
 }
