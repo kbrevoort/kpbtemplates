@@ -4,7 +4,7 @@
 \alias{build_label_grob}
 \title{Build Label Grob}
 \usage{
-build_label_grob(label_type, plot, w = unit(6.5, "in"))
+build_label_grob(label_type, plot, w = grid::unit(6.5, "in"))
 }
 \arguments{
 \item{label_type}{Character scalar giving the label to convert to a grob.}
