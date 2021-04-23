@@ -75,15 +75,15 @@ theme_presentation <- function(legend.position = 'none') {
 }
 
 #' @export
-theme_timeseries <- function(legend.position = 'none') {
+theme_timeseries <- function(legend.position = 'none',
+                             panel.grid.major.x = element_line(size = rel(0.5)),
+                             panel.grid.minor.x = element_line(size = rel(1L))) {
 
   t <- theme(
     # Switch the major and minor grid lines so that the heavier weight lines
     # correspond to the start and end of each year
-    panel.grid.major.x = element_line(color = 'grey92',
-                                      size = rel(0.5)),
-    panel.grid.minor.x = element_line(color = 'grey92',
-                                      size = rel(1L)),
+    panel.grid.major.x = panel.grid.major.x,
+    panel.grid.minor.x = panel.grid.minor.x,
     panel.grid.minor.y = element_blank()
   )
 
