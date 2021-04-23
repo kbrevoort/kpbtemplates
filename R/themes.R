@@ -5,7 +5,7 @@
 #' be appropriate in a printed graph.
 #' @importFrom ggplot2 theme theme_minimal margin element_text element_line element_blank
 #' @export
-theme_presentation <- function() {
+theme_presentation <- function(legend.position = 'none') {
 
   t <- theme(
     plot.margin = margin(0, 0, 0, 0),
@@ -67,8 +67,25 @@ theme_presentation <- function() {
                                 lineheight = 1.3,
                                 hjust = 0,
                                 vjust = 0.5,
-                                margin = margin(b = 10, l = 0, t = 10, r = 0))
+                                margin = margin(b = 10, l = 0, t = 10, r = 0)),
+    legend.position = legend.position
   )
 
   theme_minimal() %+replace% t
+}
+
+#' @export
+theme_timeseries <- function(legend.position = 'none') {
+
+  t <- theme(
+    # Switch the major and minor grid lines so that the heavier weight lines
+    # correspond to the start and end of each year
+    panel.grid.major.x = element_line(color = 'grey92',
+                                      size = rel(0.5)),
+    panel.grid.minor.x = element_line(color = 'grey92',
+                                      size = rel(1L)),
+    panel.grid.minor.y = element_blank()
+  )
+
+  theme_presentation(legend.position = legend.position) %+replace% t
 }
