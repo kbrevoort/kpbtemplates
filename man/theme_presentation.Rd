@@ -4,7 +4,7 @@
 \alias{theme_presentation}
 \title{Presentation Theme}
 \usage{
-theme_presentation()
+theme_presentation(legend.position = "none")
 }
 \description{
 This is a ggplot2 theme that I have prepared to format graphs in my
