@@ -25,6 +25,7 @@
 #' @param tick_length A scalar number determining the length of the annual
 #' tick. Default value is 4L, which means the tick takes up 4 percent of
 #' the lenght of the y-axis (the unit used is always 'npc').
+#' @importFrom ggplot2 ggproto
 #' @export
 scale_x_ts <- function(freq = 'annual',
                        show_years = 'even',
@@ -115,7 +116,7 @@ is_odd <- function(x) {
   as.integer(x) %% 2L == 1L
 }
 
-ScaleContinuousQuarter <- ggproto(`_class` = "ScaleContinuousQuarter",
+ScaleContinuousQuarter <- ggplot2::ggproto(`_class` = "ScaleContinuousQuarter",
                                   `_inherit` = ggplot2::ScaleContinuousDate,
                                   freq = 'annual',
                                   show_years = 'even',
@@ -265,10 +266,10 @@ get_by_string <- function(x) {
          monthly = '1 month')
 }
 
-GeomTSScale <- ggproto("GeomTSScale",
-                       Geom,
+GeomTSScale <- ggplot2::ggproto("GeomTSScale",
+                       ggplot2::Geom,
                        required_aes = c("x", "y"),
-                       default_aes = aes(colour = "black"),
+                       default_aes = ggplot2::aes(colour = "black"),
                        draw_panel = draw_ts_scale)
 
 geom_ts_scale <- function(mapping = NULL, data = NULL, stat = "identity",
@@ -295,12 +296,12 @@ ctrq <- function(x) {
   temp <- as.POSIXlt(x)
   temp$mday <- ifelse(temp$mon + 1L == 2L, 14L, 15L)
   temp$mon <- (floor(temp$mon / 3) * 3) + 1L
-  temp
+  as.Date(temp)
 }
 
 #' @export
 ctrm <- function(x) {
   temp <- as.POSIXlt(x)
   temp$mday <- ifelse(temp$mon + 1L == 2L, 14L, 15L)
-  temp
+  as.Date(temp)
 }
