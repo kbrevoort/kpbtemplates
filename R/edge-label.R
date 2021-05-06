@@ -67,6 +67,7 @@ compute_edgelabel <- function (self, data, params, layout) {
 #' should be expressed in 'npc' units, which capture the percentage of the
 #' plot area. So setting nudge_y = 2L will move each label up 2% of the viewable
 #' plot area.
+#' @export
 geom_edgelabel <- function(mapping = NULL, data = NULL, stat = "identity",
                            position = "identity", na.rm = FALSE, hjust = 0,
                            size = 10, inherit.aes = TRUE, nudge_y = 0,
