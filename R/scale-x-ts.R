@@ -267,10 +267,10 @@ get_by_string <- function(x) {
 }
 
 GeomTSScale <- ggplot2::ggproto("GeomTSScale",
-                       ggplot2::Geom,
-                       required_aes = c("x", "y"),
-                       default_aes = ggplot2::aes(colour = "black"),
-                       draw_panel = draw_ts_scale)
+                                ggplot2::Geom,
+                                required_aes = c("x", "y"),
+                                default_aes = ggplot2::aes(colour = "black"),
+                                draw_panel = draw_ts_scale)
 
 geom_ts_scale <- function(mapping = NULL, data = NULL, stat = "identity",
                           position = "identity", na.rm = FALSE,
