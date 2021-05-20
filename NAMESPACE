@@ -3,6 +3,7 @@
 export(ctrm)
 export(ctrq)
 export(geom_edgelabel)
+export(geom_recession)
 export(save_kpb_graph)
 export(scale_x_ts)
 export(stat_edgelabel)
