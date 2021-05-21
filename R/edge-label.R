@@ -96,7 +96,6 @@ geom_edgelabel <- function(mapping = NULL, data = NULL, stat = "identity",
 
 draw_edgelabel <- function(data, panel_params, coord) {
 
-  #browser()
   data <- coord$transform(data, panel_params)
 
   heights <- unit(data$size * .pt * data$lineheight, 'pt') %>%
@@ -111,11 +110,6 @@ draw_edgelabel <- function(data, panel_params, coord) {
     mutate(x = x,
            y = y + (nudge_y / 100)) %>%
     select(-order)
-
-  # ret_data$label <- sprintf('%s, %f',
-  #                           ret_data$label,
-  #                           grid::convertHeight(grid::current.viewport()$height, 'in'))
-  # #browser()
 
   textGrob(ret_data$label,
            ret_data$x,
@@ -195,7 +189,7 @@ pad_label <- function(x, s = 1L) {
 nudge_y_labels <- function(label, nudge_y) {
 
   #browser()
-  if (length(nudge_y) == 0 & is.null(names(nudge_y)))
+  if (length(nudge_y) == 1L & is.null(names(nudge_y)))
     return(rep(nudge_y, length(label)))
 
   if (!is.null(names(nudge_y))) {
@@ -205,3 +199,95 @@ nudge_y_labels <- function(label, nudge_y) {
 
   stop('Invalid nudge_y supplied to geom_edgelabel.')
 }
+
+change_spacing <- function(y, h) {
+  dt <- make_tiles(y, h) %>%
+    adjust_bounds() %>%
+    check_overlaps()
+
+  while(max(dt$group) < length(dt$group)) {
+    #browser()
+    dt <- combine_tiles(dt) %>%
+      adjust_bounds() %>%
+      check_overlaps()
+  }
+
+  assign_newly_spaced_ys(dt) %>%
+    pull(y)
+}
+
+assign_newly_spaced_ys <- function(data) {
+  purrr::map_df(seq_along(data$y), .assign_newly_spaced_ys, data = data)
+}
+
+.assign_newly_spaced_ys <- function(i, data) {
+  dt <- slice(data, i)
+
+  dt$data[[1L]][[1L]] %>%
+    mutate(y = dt$top - cumsum(h) + (0.5 * h)) %>%
+    select(y)
+}
+
+make_tiles <- function(y, h) {
+  my_data <- purrr::map(seq_along(y), ~ list(tibble::tibble(y = y[.x], h = h[.x])))
+
+  tibble::tibble(y = y, height = h) %>%
+    arrange(desc(y)) %>%
+    mutate(order = seq_along(y),
+           top = y + 0.5 * height,
+           bottom = y - 0.5 * height,
+           data = my_data)
+}
+
+
+check_overlaps <- function(dt) {
+  mutate(dt,
+         rel_pos = ifelse(dplyr::row_number() == 1L,
+                          1 - top,
+                          dplyr::lag(bottom, n = 1L) - top),
+         no_overlap = as.logical(rel_pos > 0),
+         group = 0) %>%
+    # Combine tiles that overlap
+    mutate(group = cumsum(no_overlap)) %>%
+    select(y, height, order, top, bottom, group, data)
+}
+
+combine_tiles <- function(dt) {
+  purrr::map_dfr(unique(dt$group), .combine_tiles, dt = dt)
+}
+
+# This function will be executed once for each group
+# in dt.
+.combine_tiles <- function(i, dt) {
+
+  #browser()
+  temp_dt <- filter(dt, group == i)
+
+  if (dim(temp_dt)[1L] == 1L) {
+    ret_dt <- temp_dt %>%
+      select(y, height, order, top, bottom, data)
+    return(ret_dt)
+  }
+
+  ret_dt <- temp_dt %>%
+    mutate(alpha_i = y + cumsum(height) - (0.5 * height),
+           alpha = mean(alpha_i)) %>%
+    summarize(y = max(alpha) - (0.5 * sum(height)),
+              height = sum(height),
+              order = min(order),
+              top = max(alpha),
+              bottom = max(alpha) - sum(height)) %>%
+    mutate(data = list(list(bind_rows(temp_dt$data))))
+}
+
+adjust_bounds <- function(data) {
+  mutate(data,
+         adjustment = dplyr::case_when(
+           top > 1 ~ 1 - top,
+           bottom < 0 ~ -1 * bottom,
+           TRUE ~ 0)) %>%
+    mutate(y = y + adjustment,
+           top = top + adjustment,
+           bottom = bottom + adjustment)
+}
+
