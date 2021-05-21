@@ -47,13 +47,37 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
     return(build_y_grob(plot, w))
 
   params <- plot$theme[[glue::glue("plot.{label_type}")]]
-  out_grob <- gridtext::textbox_grob(text = plot$labels[[label_type]],
-                                     halign = params$hjust,
-                                     hjust = params$hjust,
-                                     vjust = params$vjust,
-                                     width = w,
-                                     padding = if(is.null(params$margin)) margin(0, 0, 0, 0) else params$margin,
-                                     gp = params2gp(params, plot$theme$text$size))
+  raw_label <- plot$labels[[label_type]] %>%
+    strsplit('\n') %>%
+    unlist()
+
+  this_list <- lapply(raw_label,
+                      gridtext::textbox_grob,
+                      halign = params$hjust,
+                      hjust = params$hjust,
+                      vjust = params$vjust,
+                      width = w,
+                      padding = margin(b = 5, 0, 0, 0),
+                      gp = params2gp(params, plot$theme$text$size))
+
+  out_grob <- gridExtra::arrangeGrob(grobs = this_list,
+                                     heights = grid::unit(vapply(this_list,
+                                                                 calculate_grob_heights,
+                                                                 4.3),
+                                                          rep('in', length(this_list))),
+                                     widths = w,
+                                     ncol = 1L,
+                                     padding = if(is.null(params$margin)) margin(0, 0, 0, 0) else c(40, 40, 40, 40)) #params$margin)
+
+
+  # out_grob <- gridtext::textbox_grob(text = plot$labels[[label_type]],
+  #                                    halign = params$hjust,
+  #                                    hjust = params$hjust,
+  #                                    vjust = params$vjust,
+  #                                    width = w,
+  #                                    padding = if(is.null(params$margin)) margin(0, 0, 0, 0) else params$margin,
+  #                                    gp = params2gp(params, plot$theme$text$size))
+  out_grob
 }
 
 #' @importFrom gridtext textbox_grob
@@ -121,6 +145,7 @@ format_graph <- function(plot, w) {
                                        heights = grid::unit(vapply(grob_list, calculate_grob_heights, 4.3),
                                                       ifelse(names(grob_list) == 'graph', 'null', 'in')),
                                        widths = w,
+                                       padding = unit(0, 'in'),
                                        ncol = 1L)
   grob_table
 }
