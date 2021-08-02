@@ -46,7 +46,14 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
   if (label_type == 'y')
     return(build_y_grob(plot, w))
 
-  params <- plot$theme[[glue::glue("plot.{label_type}")]]
+  if (purrr::is_empty(plot$theme)) {
+    params <- ggplot2::element_text(hjust = 0, vjust = 0.5)
+    gp_params <- params2gp(params, NULL)
+  } else {
+    params <- plot$theme[[glue::glue("plot.{label_type}")]]
+    gp_params <- params2gp(params, plot$theme$text$size)
+  }
+
   raw_label <- plot$labels[[label_type]] %>%
     strsplit('\n') %>%
     unlist()
@@ -58,7 +65,7 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
                       vjust = params$vjust,
                       width = w,
                       padding = margin(b = 5, 0, 0, 0),
-                      gp = params2gp(params, plot$theme$text$size))
+                      gp = gp_params)
 
   out_grob <- gridExtra::arrangeGrob(grobs = this_list,
                                      heights = grid::unit(vapply(this_list,
