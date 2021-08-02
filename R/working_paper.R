@@ -101,15 +101,15 @@ use_default_csl <- function() {
 
 my_wp_postprocessor <- function(metadata, input, output, clean, verbose) {
   # Make necessary changes to the intermediate markdown file before processing
-  readr::read_file(output) %>%
+  out_text <- readr::read_file(output) %>%
     replace_duplicate_punctuation() %>%
-    add_csl_environment() %>%
-    readr::write_file(output)
+    add_csl_environment()
+
+  readr::write_file(x = out_text, file = output, append = FALSE)
 
   # Now call the default post_processor function
   f <- bookdown::pdf_document2()$post_processor
   f(metadata, input, output, clean, verbose)
-
 }
 
 my_wp_preprocessor <- function(metadata, input_file, runtime, knit_meta, files_dir, output_dir) {
@@ -133,7 +133,7 @@ my_wp_preprocessor <- function(metadata, input_file, runtime, knit_meta, files_d
   }
 
   paste(in_file, collapse = '\n') %>%
-    readr::write_file(in_file, path = input_file)
+    readr::write_file(in_file, file = input_file)
 
   NULL
 }
