@@ -39,6 +39,7 @@
 \usepackage{tabu}   % necessary for full_width kableExtra tables
 \usepackage{ragged2e}
 \usepackage{colortbl}
+\usepacakge{caption}  % Necessary for figure notes
 
 
 $if(csl)$
@@ -168,6 +169,9 @@ $if(classify)$
 \rhead{\textbf{$classify$}}
 \setlength{\headheight}{15pt}
 $endif$
+
+% Creates the fnote command that is used to generate figure notes
+\newcommand\fnote[1]{\captionsetup{font=small, justification=justified}\caption*{#1}}
 
 $preamble$
 
