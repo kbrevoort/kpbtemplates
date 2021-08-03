@@ -1,27 +1,5 @@
 #' @export
 caption_hook <- function(x, options) {
-  # This function produces the image inclusion code for LaTeX.
-  # optionally wrapped in code that resizes it, aligns it, handles it
-  # as a subfigure, and/or wraps it in a float. Here is a road map of
-  # the intermediate variables this function fills in (or leaves empty,
-  # as needed), and an impression of their (possible) contents.
-  #
-  #     fig1,                   # \begin{...}[...]
-  #       align1,               #   {\centering
-  #         sub1,               #     \subfloat[...]{
-  #           resize1,          #       \resizebox{...}{...}{
-  #             tikz code       #         '\\input{chunkname.tikz}'
-  #             or animate code #         or '\\animategraphics[size]{1/interval}{chunkname}{1}{fig.num}'
-  #             or plain code   #         or '\\includegraphics[size]{chunkname}'
-  #           resize2,          #       }
-  #         sub2,               #     }
-  #       align2,               #   }
-  #     fig2                    #   \caption[...]{...\label{...}}
-  #                             # \end{...}  % still fig2
-
-  #rw <- options$resize.width
-  #rh <- options$resize.height
-  #rc <- options$resize.command
   resize1 <- resize2 <- ''
   if (is.null(options$resize.command)) {
     if (!is.null(options$resize.width) || !is.null(options$reside.height)) {
