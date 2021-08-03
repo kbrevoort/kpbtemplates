@@ -1,3 +1,4 @@
+#' @export
 caption_hook <- function(x, options) {
   # This function produces the image inclusion code for LaTeX.
   # optionally wrapped in code that resizes it, aligns it, handles it
