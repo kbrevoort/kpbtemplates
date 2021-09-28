@@ -20,4 +20,4 @@ Encoding: UTF-8
 LazyData: true
 URL: https://github.com/kbrevoort/kpbtemplates
 BugReports: https://github.com/kbrevoort/kpbtemplates/issues
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1

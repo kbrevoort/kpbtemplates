@@ -1,31 +1,3 @@
-#' Stat Edge Label
-#'
-#' A `ggplot2` stat that takes the labels for series of data and
-#' labels each series at its right-most point.
-#' @importFrom ggplot2 layer
-#' @export
-stat_edgelabel <- function(data = NULL,
-                          mapping = NULL,
-                          position = 'identity',
-                          ...,
-                          inherit.aes = TRUE) {
-
-  #browser()
-  ggplot2::layer(data = data,
-                 mapping = mapping,
-                 stat = ggplot2::ggproto('StatEdgeLabel',
-                                         ggplot2::Stat,
-                                         compute_layer = compute_edgelabel,
-                                         required_aes = c('x', 'y', 'label')),
-                 geom = 'text',
-                 position = position,
-                 show.legend = FALSE,
-                 inherit.aes = inherit.aes,
-                 check.aes = FALSE,
-                 check.param = FALSE,
-                 params = list(...))
-}
-
 #' Compute Edge Label
 #'
 #' This is the computational engine for stat_edgelabel.  It takes
@@ -46,199 +18,185 @@ compute_edgelabel <- function (self, data, params, layout) {
   if ('panel' %in% names(params))
     data <- dplyr::filter(data, PANEL == params$panel)
 
+  #browser()
+
   group_by(data, PANEL, group) %>%
     dplyr::filter(!is.na(y), !is.na(x)) %>%
     arrange(PANEL, group, desc(x)) %>%
     slice(1L) %>%
-    mutate(nudge_y = nudge_y_labels(label, self$nudge_y)) %>%
-    mutate(label = pad_label(label, self$nudge_x)) %>%
-    ungroup()
+    ungroup() %>%
+    mutate(x = max(x, na.rm = TRUE))
 }
 
-#' geom_edgelabel
-#'
-#' Adds labels to the right of the plot for each group in the data. The
-#' labels appear to the right of the farthest right point of any of the
-#' plotted series.
-#' @param nudge_x The number of characters to move each label to the right.
-#' A value of "1L" adds a single empty space to each label.  A value of 2L
-#' adds two spaces.  Default is 0.
-#' @param nudge_y Named character vector to use to nudge the y-values.  Nudges
-#' should be expressed in 'npc' units, which capture the percentage of the
-#' plot area. So setting nudge_y = 2L will move each label up 2% of the viewable
-#' plot area.
+StatEdgeLabel <- ggplot2::ggproto('StatEdgeLabel',
+                                  ggplot2::Stat,
+                                  compute_layer = compute_edgelabel,
+                                  required_aes = c('x', 'y', 'label'),
+                                  nudge_x = 0,
+                                  nudge_y = 0)
+
+#' @importFrom ggplot2 layer ggproto
 #' @export
-geom_edgelabel <- function(mapping = NULL, data = NULL, stat = "identity",
-                           position = "identity", na.rm = FALSE, hjust = 0,
-                           size = 10, inherit.aes = TRUE, nudge_y = 0,
-                           nudge_x = 0, ...) {
+geom_edgelabel <- function(mapping = NULL,
+                           data = NULL,
+                           stat = StatEdgeLabel,
+                           position = "identity",
+                           ...,
+                           use_edge = FALSE,
+                           label.padding = 0.25,
+                           nudge_x = 0,
+                           nudge_y = 0,
+                           na.rm = FALSE,
+                           inherit.aes = TRUE) {
 
-  size <- size / .pt  # Convert to points
-
-  layer(geom = GeomEdgeLabel,
+  layer(data = data,
         mapping = mapping,
-        data = data,
-        stat = ggplot2::ggproto('StatEdgeLabel',
-                                ggplot2::Stat,
-                                compute_layer = compute_edgelabel,
-                                required_aes = c('x', 'y', 'label'),
-                                nudge_x = nudge_x,
-                                nudge_y = nudge_y),
+        stat = stat,
+        geom = GeomEdgeLabel,
         position = position,
         show.legend = FALSE,
         inherit.aes = inherit.aes,
-        check.param = FALSE,
         params = list(na.rm = na.rm,
-                      hjust = hjust,
-                      size = size,
+                      use_edge = use_edge,
+                      label.padding = unit(label.padding, 'lines'),
+                      nudge_x = nudge_x,
+                      nudge_y = nudge_y,
                       ...))
 }
 
-draw_edgelabel <- function(data, panel_params, coord) {
 
-  data <- coord$transform(data, panel_params)
+#' @export
+makeContent.edgelabel <- function(x) {
 
-  heights <- unit(data$size * .pt * data$lineheight, 'pt') %>%
-    grid::convertHeight('npc', valueOnly = TRUE)
+  tiles <- make_tiles(obj = x) %>%
+    adjust_bounds() %>%
+    check_overlaps() %>%
+    group_tiles() %>%
+    update_y_locations()
 
-  ret_data <- data %>%
-    mutate(heights = heights * 1.4,
-           order = seq_along(data$y)) %>%
-    arrange(desc(y)) %>%
-    mutate(y = change_spacing(y, heights)) %>%
-    arrange(order) %>%
-    mutate(x = x,
-           y = y + (nudge_y / 100)) %>%
-    select(-order)
+  x$data <- select(tiles, -height)
 
-  textGrob(ret_data$label,
-           ret_data$x,
-           ret_data$y,
-           default.units = 'npc',
-           hjust = ret_data$hjust,
-           vjust = ret_data$vjust,
-           rot = ret_data$angle,
-           gp = gpar(col = alpha(ret_data$colour, ret_data$alpha),
-                     fontsize = ret_data$size * .pt,
-                     fontfamily = ret_data$family,
-                     fontface = ret_data$fontface,
-                     lineheight = ret_data$lineheight),
-           check.overlap = FALSE)
+  grobs <- lapply(seq_along(tiles$y),
+                  create_edgelabel_grobs,
+                  obj = x)
+
+  grobs <- unlist(grobs, recursive = FALSE)
+  class(grobs) <- "gList"
+
+  setChildren(x, grobs)
 }
 
+#' @importFrom grid textGrob gpar gList
+#' @importFrom scales alpha
+create_edgelabel_grobs <- function(i, obj) {
+
+  row <- slice(obj$data, i)
+
+  x_pos <- ifelse(obj$use_edge, 1, pmin(row$x + obj$nudge_x + 0.02, 1))
+
+  grobs <- textGrob(label = row$label,
+                    x = x_pos,
+                    y = row$y,
+                    rot = row$angle,
+                    hjust = row$hjust,
+                    vjust = row$vjust,
+                    default.units = 'native',
+                    check.overlap = FALSE,
+                    name = sprintf('edgelabel_%02d', i),
+                    gp = gpar(col = scales::alpha(row$colour,
+                                                  row$alpha),
+                              fontsize = row$size * .pt,
+                              fontfamily = row$family,
+                              fontface = row$fontface,
+                              lineheight = row$lineheight),
+                    vp = NULL)
+
+  gList(grobs)
+}
+
+#' @importFrom grid gTree
+draw_edgelabel <- function(data,
+                           panel_params,
+                           coord,
+                           use_edge = FALSE,
+                           label.padding = 0.25,
+                           nudge_x = 0,
+                           nudge_y = 0) {
+
+  if (!grid::is.unit(label.padding))
+    label.padding = unit(label.padding, 'lines')
+
+  gTree(data = coord$transform(data, panel_params),
+        name = 'geom_edgelabel',
+        use_edge = use_edge,
+        label.padding = label.padding,
+        nudge_x = nudge_x,
+        nudge_y = nudge_y,
+        cl = 'edgelabel')
+}
+
+#' @importFrom ggplot2 ggproto aes Geom draw_key_text
+#' @export
 GeomEdgeLabel <- ggplot2::ggproto("GeomEdgeLabel",
                                   ggplot2::Geom,
                                   required_aes = c("x", "y", "label"),
-                                  # These default values (mostly) come from GeomText
                                   default_aes = ggplot2::aes(colour = "black",
                                                              size = 3.88,
                                                              angle = 0,
-                                                             hjust = 0,
-                                                             vjust = 0.5,
-                                                             alpha = 1L,
+                                                             alpha = NA,
                                                              family = "",
                                                              fontface = 1,
-                                                             lineheight = 1.2),
-                                  draw_panel = draw_edgelabel)
+                                                             lineheight = 1.2,
+                                                             hjust = 0, # 0.5,
+                                                             vjust = 0.5),
+                                  draw_panel = draw_edgelabel,
+                                  draw_key = ggplot2::draw_key_text)
 
-compute_grids <- function(i, dt) {
 
-  dtr <- slice(dt, i)
+#' @importFrom purrr map_dfr
+#' @importFrom dplyr arrange mutate relocate
+make_tiles <- function(obj) {
 
-  #browser()
-  ret_grob <- grid::textGrob(label = dtr$label,
-                             x = dtr$x,
-                             y = dtr$y,
-                             hjust = dtr$hjust,
-                             vjust = dtr$vjust,
-                             default.units = 'npc',
-                             gp = gpar(font = dtr$fontface,
-                                       fontfamily = dtr$family,
-                                       lineheight = dtr$lineheight,
-                                       fontsize = dtr$size * .pt,
-                                       alpha = dtr$alpha),
-                             vp = NULL)
-
-  calc_grob_height(ret_grob, 'npc')
-}
-
-#' Pad Label
-#'
-#' Adds additional empty spaces before the labels being displayed along
-#' the edge. This allows the x position of each label to remain at the
-#' same point as the data to avoid the labels being completely dropped
-#' by the limit set for the x-axis.
-#' @param x A vector of character labels to be displayed
-#' @param s Integer scalar giving the number of blank spaces to use in
-#' nudging the label to the right.
-#' @return A character vector with the extra blank spaces added
-pad_label <- function(x, s = 1L) {
-  sprintf('%s%s',
-          paste0(rep(' ', as.integer(s)), collapse = ''),
-          x)
-}
-
-#' Nudge Y Labels
-#'
-#' Creates a vector of nudges to apply to the y-axis of the label.
-#' @param label Character vector of labels
-#' @param nudge_y Named character vector supplied by the  user.  The name
-#' of each element will correspond to the label to which the nudge is to
-#' be applied.
-#' @return A numeric vector of nudges
-nudge_y_labels <- function(label, nudge_y) {
-
-  #browser()
-  if (length(nudge_y) == 1L & is.null(names(nudge_y)))
-    return(rep(nudge_y, length(label)))
-
-  if (!is.null(names(nudge_y))) {
-    new_nudge <- nudge_y[label]
-    return(ifelse(is.na(new_nudge), 0, as.numeric(new_nudge)))
-  }
-
-  stop('Invalid nudge_y supplied to geom_edgelabel.')
-}
-
-change_spacing <- function(y, h) {
-  dt <- make_tiles(y, h) %>%
-    adjust_bounds() %>%
-    check_overlaps()
-
-  while(max(dt$group) < length(dt$group)) {
-    #browser()
-    dt <- combine_tiles(dt) %>%
-      adjust_bounds() %>%
-      check_overlaps()
-  }
-
-  assign_newly_spaced_ys(dt) %>%
-    pull(y)
-}
-
-assign_newly_spaced_ys <- function(data) {
-  purrr::map_df(seq_along(data$y), .assign_newly_spaced_ys, data = data)
-}
-
-.assign_newly_spaced_ys <- function(i, data) {
-  dt <- slice(data, i)
-
-  dt$data[[1L]][[1L]] %>%
-    mutate(y = dt$top - cumsum(h) + (0.5 * h)) %>%
-    select(y)
-}
-
-make_tiles <- function(y, h) {
-  my_data <- purrr::map(seq_along(y), ~ list(tibble::tibble(y = y[.x], h = h[.x])))
-
-  tibble::tibble(y = y, height = h) %>%
+  purrr::map_dfr(seq_along(obj$data$y),
+                 .make_tile,
+                 obj = obj) %>%
     arrange(desc(y)) %>%
     mutate(order = seq_along(y),
            top = y + 0.5 * height,
-           bottom = y - 0.5 * height,
-           data = my_data)
+           bottom = y - 0.5 * height) %>%
+    relocate(y, height, order, top, bottom, data)
 }
 
+#' @importFrom grid convertHeight
+#' @importFrom tibble tibble
+.make_tile <- function(i, obj) {
+  # The object passed here, obj, is the one gList called 'geom_edgelabel
+
+  # The padding around each bounding box.
+  add_y <- convertHeight(obj$label.padding, "native", valueOnly = TRUE)
+
+  row <- obj$data[i, , drop = FALSE]
+  tg <- create_edgelabel_grobs(i, obj = obj)
+
+  y1 <- convertHeight(grobY(tg, "south"), "native", TRUE) - add_y + obj$nudge_y
+  y2 <- convertHeight(grobY(tg, "north"), "native", TRUE) + add_y + obj$nudge_y
+
+  row$height <- y2 - y1
+  tibble::tibble(y = mean(c(y1, y2), na.rm = TRUE),  # This should equal row$y
+                 height = y2 - y1,
+                 data = list(row))
+}
+
+adjust_bounds <- function(data) {
+  mutate(data,
+         adjustment = dplyr::case_when(
+           top > 1 ~ 1 - top,
+           bottom < 0 ~ -1 * bottom,
+           TRUE ~ 0)) %>%
+    mutate(y = y + adjustment,
+           top = top + adjustment,
+           bottom = bottom + adjustment)
+}
 
 check_overlaps <- function(dt) {
   mutate(dt,
@@ -252,12 +210,14 @@ check_overlaps <- function(dt) {
     select(y, height, order, top, bottom, group, data)
 }
 
+#' @importFrom purrr map_dfr
 combine_tiles <- function(dt) {
   purrr::map_dfr(unique(dt$group), .combine_tiles, dt = dt)
 }
 
 # This function will be executed once for each group
 # in dt.
+#' @importFrom dplyr filter summarize mutate
 .combine_tiles <- function(i, dt) {
 
   #browser()
@@ -277,17 +237,37 @@ combine_tiles <- function(dt) {
               order = min(order),
               top = max(alpha),
               bottom = max(alpha) - sum(height)) %>%
-    mutate(data = list(list(bind_rows(temp_dt$data))))
+    mutate(data = list(bind_rows(temp_dt$data)))
 }
 
-adjust_bounds <- function(data) {
-  mutate(data,
-         adjustment = dplyr::case_when(
-           top > 1 ~ 1 - top,
-           bottom < 0 ~ -1 * bottom,
-           TRUE ~ 0)) %>%
-    mutate(y = y + adjustment,
-           top = top + adjustment,
-           bottom = bottom + adjustment)
+group_tiles <- function(orig_tiles) {
+  tiles <- orig_tiles
+  iter <- 0L
+
+  while (length(tiles$group) > length(unique(tiles$group))) {
+    iter <- iter + 1
+    stopifnot(iter < 1000)
+
+    tiles <- combine_tiles(tiles) %>%
+      adjust_bounds() %>%
+      check_overlaps()
+  }
+
+  tiles
 }
 
+#' @importFrom purrr map_df
+update_y_locations <- function(tiles) {
+  purrr::map_df(seq_along(tiles$y), .update_y_locations, tiles = tiles)
+}
+
+#' @importFrom dplyr arrange mutate
+.update_y_locations <- function(i, tiles) {
+  #browser()
+  row <- tiles[i, , drop = FALSE]
+
+#  cat('Starting 2')
+  out_dt <- row$data[[1L]] %>%
+    arrange(y) %>%  # Sort for low to high
+    mutate(y = row$bottom + cumsum(height) - (0.5 * height))
+}

@@ -4,7 +4,14 @@
 \alias{theme_presentation}
 \title{Presentation Theme}
 \usage{
-theme_presentation(legend.position = "none")
+theme_presentation(
+  legend.position = "none",
+  as.ts = FALSE,
+  panel.grid.major.x = element_blank(),
+  panel.grid.minor.x = element_blank(),
+  panel.grid.major.y = element_blank(),
+  panel.grid.minor.y = element_blank()
+)
 }
 \description{
 This is a ggplot2 theme that I have prepared to format graphs in my
