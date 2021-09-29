@@ -11,6 +11,7 @@
 #' including the range of th x and y axes
 #' @return A data.frame with the processed data.
 #' @importFrom dplyr filter group_by arrange slice mutate ungroup
+#' @export
 compute_edgelabel <- function (self, data, params, layout) {
 
   #browser()
@@ -20,12 +21,16 @@ compute_edgelabel <- function (self, data, params, layout) {
 
   #browser()
 
+  #cat('In compute_edgelabel\n\n')
+
   group_by(data, PANEL, group) %>%
     dplyr::filter(!is.na(y), !is.na(x)) %>%
     arrange(PANEL, group, desc(x)) %>%
     slice(1L) %>%
     ungroup() %>%
     mutate(x = max(x, na.rm = TRUE))
+
+  #browser()
 }
 
 StatEdgeLabel <- ggplot2::ggproto('StatEdgeLabel',
@@ -39,7 +44,7 @@ StatEdgeLabel <- ggplot2::ggproto('StatEdgeLabel',
 #' @export
 geom_edgelabel <- function(mapping = NULL,
                            data = NULL,
-                           stat = StatEdgeLabel,
+                           stat = kpbtemplates::StatEdgeLabel,
                            position = "identity",
                            ...,
                            use_edge = FALSE,
@@ -49,50 +54,59 @@ geom_edgelabel <- function(mapping = NULL,
                            na.rm = FALSE,
                            inherit.aes = TRUE) {
 
+  #cat('I am here.\n\n')
+
   layer(data = data,
         mapping = mapping,
         stat = stat,
-        geom = GeomEdgeLabel,
+        geom = kpbtemplates::GeomEdgeLabel,
         position = position,
         show.legend = FALSE,
         inherit.aes = inherit.aes,
         params = list(na.rm = na.rm,
                       use_edge = use_edge,
-                      label.padding = unit(label.padding, 'lines'),
+                      label.padding = grid::unit(label.padding, 'lines'),
                       nudge_x = nudge_x,
                       nudge_y = nudge_y,
                       ...))
 }
 
-
+#' @importFrom grid setChildren makeContent
 #' @export
 makeContent.edgelabel <- function(x) {
 
-  tiles <- make_tiles(obj = x) %>%
-    adjust_bounds() %>%
-    check_overlaps() %>%
-    group_tiles() %>%
-    update_y_locations()
+  #cat('I am here now.\n\n')
+
+  #browser()
+
+  tiles <- kpbtemplates::make_tiles(obj = x) %>%
+    kpbtemplates::adjust_bounds() %>%
+    kpbtemplates::check_overlaps() %>%
+    kpbtemplates::group_tiles() %>%
+    kpbtemplates::update_y_locations()
 
   x$data <- select(tiles, -height)
 
   grobs <- lapply(seq_along(tiles$y),
-                  create_edgelabel_grobs,
+                  kpbtemplates::create_edgelabel_grobs,
                   obj = x)
 
   grobs <- unlist(grobs, recursive = FALSE)
   class(grobs) <- "gList"
 
-  setChildren(x, grobs)
+  grid::setChildren(x, grobs)
 }
 
 #' @importFrom grid textGrob gpar gList
 #' @importFrom scales alpha
 create_edgelabel_grobs <- function(i, obj) {
 
+  #cat('In create_edgelabel_grobs\n\n')
+
   row <- slice(obj$data, i)
 
-  x_pos <- ifelse(obj$use_edge, 1, pmin(row$x + obj$nudge_x + 0.02, 1))
+  line_diff <- grid::convertUnit(obj$label.padding, unitTo = 'native', valueOnly = TRUE)
+  x_pos <- ifelse(obj$use_edge, 1, pmin(row$x + obj$nudge_x + line_diff, 1))
 
   grobs <- textGrob(label = row$label,
                     x = x_pos,
@@ -111,7 +125,7 @@ create_edgelabel_grobs <- function(i, obj) {
                               lineheight = row$lineheight),
                     vp = NULL)
 
-  gList(grobs)
+  grid::gList(grobs)
 }
 
 #' @importFrom grid gTree
@@ -124,15 +138,19 @@ draw_edgelabel <- function(data,
                            nudge_y = 0) {
 
   if (!grid::is.unit(label.padding))
-    label.padding = unit(label.padding, 'lines')
+    label.padding = grid::unit(label.padding, 'lines')
 
-  gTree(data = coord$transform(data, panel_params),
-        name = 'geom_edgelabel',
-        use_edge = use_edge,
-        label.padding = label.padding,
-        nudge_x = nudge_x,
-        nudge_y = nudge_y,
-        cl = 'edgelabel')
+  #cat('In draw edge label\n\n')
+
+  grob <- gTree(data = coord$transform(data, panel_params),
+                #name = 'geom_edgelabel',
+                use_edge = use_edge,
+                label.padding = label.padding,
+                nudge_x = nudge_x,
+                nudge_y = nudge_y,
+                cl = 'edgelabel')
+  grob$name <- grid::grobName(grob, 'geom_edgelabel')
+  grob
 }
 
 #' @importFrom ggplot2 ggproto aes Geom draw_key_text
@@ -155,7 +173,9 @@ GeomEdgeLabel <- ggplot2::ggproto("GeomEdgeLabel",
 
 #' @importFrom purrr map_dfr
 #' @importFrom dplyr arrange mutate relocate
+#' @export
 make_tiles <- function(obj) {
+  #cat('In make_tiles.\n\n')
 
   purrr::map_dfr(seq_along(obj$data$y),
                  .make_tile,
@@ -187,6 +207,7 @@ make_tiles <- function(obj) {
                  data = list(row))
 }
 
+#' @export
 adjust_bounds <- function(data) {
   mutate(data,
          adjustment = dplyr::case_when(
@@ -198,6 +219,7 @@ adjust_bounds <- function(data) {
            bottom = bottom + adjustment)
 }
 
+#' @export
 check_overlaps <- function(dt) {
   mutate(dt,
          rel_pos = ifelse(dplyr::row_number() == 1L,
@@ -211,6 +233,7 @@ check_overlaps <- function(dt) {
 }
 
 #' @importFrom purrr map_dfr
+#' @export
 combine_tiles <- function(dt) {
   purrr::map_dfr(unique(dt$group), .combine_tiles, dt = dt)
 }
@@ -240,6 +263,7 @@ combine_tiles <- function(dt) {
     mutate(data = list(bind_rows(temp_dt$data)))
 }
 
+#' @export
 group_tiles <- function(orig_tiles) {
   tiles <- orig_tiles
   iter <- 0L
@@ -257,6 +281,7 @@ group_tiles <- function(orig_tiles) {
 }
 
 #' @importFrom purrr map_df
+#' @export
 update_y_locations <- function(tiles) {
   purrr::map_df(seq_along(tiles$y), .update_y_locations, tiles = tiles)
 }
