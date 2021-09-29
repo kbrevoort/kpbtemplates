@@ -50,7 +50,11 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
     params <- ggplot2::element_text(hjust = 0, vjust = 0.5)
     gp_params <- params2gp(params, NULL)
   } else {
-    params <- plot$theme[[glue::glue("plot.{label_type}")]]
+    if (label_type %in% c('source', 'note')) {
+      params <- plot$theme[['plot.caption']]
+    } else {
+      params <- plot$theme[[glue::glue("plot.{label_type}")]]
+    }
     gp_params <- params2gp(params, plot$theme$text$size)
   }
 
@@ -64,9 +68,19 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
                       hjust = params$hjust,
                       vjust = params$vjust,
                       width = w,
-                      padding = margin(b = 5, 0, 0, 0),
+                      padding = margin(b = 5,
+                                       l = 0,
+                                       t = 0,
+                                       r = 0),
                       gp = gp_params)
 
+  my_padding <- if(is.null(params$margin)) {
+    margin(0, 0, 0, 0)
+  } else if (label_type == 'note') {
+    margin(100, 40, 100, 40)
+  } else {
+    margin(40, 40, 40, 40)
+  }
   out_grob <- gridExtra::arrangeGrob(grobs = this_list,
                                      heights = grid::unit(vapply(this_list,
                                                                  calculate_grob_heights,
@@ -74,8 +88,11 @@ build_label_grob <- function(label_type, plot, w = grid::unit(6.5, 'in')) {
                                                           rep('in', length(this_list))),
                                      widths = w,
                                      ncol = 1L,
-                                     padding = if(is.null(params$margin)) margin(0, 0, 0, 0) else c(40, 40, 40, 40)) #params$margin)
-
+                                     padding = margin(t = 1,
+                                                      r = 0.1,
+                                                      b = 1,
+                                                      l = 0.1,
+                                                      unit = 'inches')) #if(is.null(params$margin)) margin(0, 0, 0, 0) else c(40, 40, 40, 40)) #params$margin)
 
   # out_grob <- gridtext::textbox_grob(text = plot$labels[[label_type]],
   #                                    halign = params$hjust,
@@ -134,7 +151,7 @@ calculate_grob_heights <- function(grob) {
 #' @importFrom gridExtra arrangeGrob
 format_graph <- function(plot, w) {
 
-  all_labels <- c('tag', 'title', 'subtitle', 'y', 'graph', 'caption')
+  all_labels <- c('tag', 'title', 'subtitle', 'note', 'y', 'graph', 'caption', 'source')
   grob_list <- lapply(all_labels,
                       build_label_grob,
                       plot = plot,
@@ -148,9 +165,13 @@ format_graph <- function(plot, w) {
   null_index <- vapply(grob_list, is.null, TRUE)
   grob_list <- grob_list[!null_index]
 
+  my_heights <- grid::unit(vapply(grob_list, calculate_grob_heights, 4.3) +
+                             ifelse(names(grob_list) == 'note', 0.25, 0),
+                           ifelse(names(grob_list) == 'graph', 'null', 'in'))
   grob_table <- gridExtra::arrangeGrob(grobs = grob_list,
-                                       heights = grid::unit(vapply(grob_list, calculate_grob_heights, 4.3),
-                                                      ifelse(names(grob_list) == 'graph', 'null', 'in')),
+                                       heights = my_heights,
+                                       #  grid::unit(vapply(grob_list, calculate_grob_heights, 4.3),
+                                      #                ifelse(names(grob_list) == 'graph', 'null', 'in')),
                                        widths = w,
                                        padding = unit(0, 'in'),
                                        ncol = 1L)
