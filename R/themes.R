@@ -7,6 +7,7 @@
 #' @export
 theme_presentation <- function(legend.position = 'none',
                                as.ts = FALSE,
+                               plot.margin = margin(0, 0, 0, 0),
                                panel.grid.major.x = element_blank(),
                                panel.grid.minor.x = element_blank(),
                                panel.grid.major.y = element_blank(),
@@ -21,7 +22,7 @@ theme_presentation <- function(legend.position = 'none',
   }
 
   t <- theme(
-    plot.margin = margin(0, 0, 0, 0),
+    plot.margin = plot.margin,
     plot.title.position = 'plot',
     plot.title = element_text(size = 18L,
                               lineheight = 1,
@@ -66,6 +67,11 @@ theme_presentation <- function(legend.position = 'none',
                                linetype = 'solid'),
     axis.line.y = element_blank(),
     axis.ticks = element_blank(),
+    strip.text = element_text(family = 'sans',
+                              size = 12L,
+                              hjust = 0.5,
+                              vjust = 0.5,
+                              face = 'bold'),
     plot.tag.position = c(1, 1),
     plot.tag = element_text(family = 'serif',
                             face = 'bold',
@@ -98,6 +104,7 @@ theme_presentation <- function(legend.position = 'none',
 #' @export
 theme_print <- function(legend.position = 'none',
                         as.ts = FALSE,
+                        plot.margin = margin(0, 0, 0, 0),
                         panel.grid.major.x = element_blank(),
                         panel.grid.minor.x = element_blank(),
                         panel.grid.major.y = element_blank(),
@@ -112,7 +119,7 @@ theme_print <- function(legend.position = 'none',
   }
 
   t <- theme(
-    plot.margin = margin(0, 0, 0, 0),
+    plot.margin = plot.margin,
     plot.title.position = 'plot',
     plot.title = element_text(size = 12L,
                               lineheight = 1,
@@ -157,6 +164,11 @@ theme_print <- function(legend.position = 'none',
                                linetype = 'solid'),
     axis.line.y = element_blank(),
     axis.ticks = element_blank(),
+    strip.text = element_text(family = 'sans',
+                              size = 8.5,
+                              hjust = 0.5,
+                              vjust = 0.5,
+                              face = 'bold'),
     panel.grid.major.x = panel.grid.major.x,
     panel.grid.minor.x = panel.grid.minor.x,
     panel.grid.major.y = panel.grid.major.y,
@@ -187,6 +199,7 @@ theme_print <- function(legend.position = 'none',
 
 #' @export
 theme_timeseries <- function(legend.position = 'none',
+                             plot.margin = margin(0, 0, 0, 0),
                              panel.grid.major.x = element_line(size = rel(1L),
                                                                color = 'gray',
                                                                inherit.blank = FALSE),
@@ -202,5 +215,5 @@ theme_timeseries <- function(legend.position = 'none',
     panel.grid.minor.y = element_blank()
   )
 
-  theme_presentation(legend.position = legend.position) %+replace% t
+  theme_presentation(legend.position = legend.position, plot.margin = plot.margin) %+replace% t
 }
