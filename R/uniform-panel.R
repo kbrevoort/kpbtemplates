@@ -28,15 +28,19 @@ stat_uniformpanel <- function(data = NULL,
 
 compute_uniformpanel <- function (self, data, params, layout) {
 
+  manual_range <- if (is.null(self$range)) 0 else self$range
+
   data %>%
     group_by(group, PANEL) %>%
     summarize(x = .compute_midpoint(x),
               miny = min(y, na.rm = TRUE),
               maxy = max(y, na.rm = TRUE),
               .groups = 'drop') %>%
+    {if (self$anchor) mutate(., miny = floor(miny), maxy = ceiling(maxy)) else .} %>%
     mutate(range = maxy - miny) %>%
     ungroup() %>%
-    mutate(maxrange = max(range, na.rm = TRUE),
+    mutate(maxrange = max(range, na.rm = TRUE)) %>%
+    mutate(maxrange = ifelse(manual_range > maxrange, manual_range, maxrange),
            expansion = (maxrange - range) / 2,
            miny = miny - expansion,
            maxy = maxy + expansion) %>%
@@ -46,15 +50,22 @@ compute_uniformpanel <- function (self, data, params, layout) {
     select(x, y, group, PANEL)
 }
 
-#' NBER Recession Date Geom
+#' Uniform Panel Geom
+#'
+#' Ensures that the y-axes of different panels
 #'
 #' Adds shaded areas to a time series that indicate the periods corresponding
 #' to recessions as dated by the National Bureau of Economic Research.
 #' @export
 geom_uniformpanel <- function(mapping = NULL, data = NULL,
                               position = "identity",
-                              size = 0.1, inherit.aes = TRUE, nudge_y = 0,
-                              nudge_x = 0, ...) {
+                              size = 0.1,
+                              inherit.aes = TRUE,
+                              nudge_y = 0,
+                              nudge_x = 0,
+                              range = NULL,
+                              anchor = TRUE,
+                              ...) {
 
   layer(geom = GeomBlank,
         mapping = mapping,
@@ -63,6 +74,8 @@ geom_uniformpanel <- function(mapping = NULL, data = NULL,
                                 ggplot2::Stat,
                                 compute_layer = compute_uniformpanel,
                                 required_aes = c('x', 'y'),
+                                range = range,
+                                anchor = anchor,
                                 nudge_x = nudge_x,
                                 nudge_y = nudge_y),
         position = position,
