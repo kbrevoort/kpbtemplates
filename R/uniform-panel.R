@@ -28,10 +28,15 @@ stat_uniformpanel <- function(data = NULL,
 
 compute_uniformpanel <- function (self, data, params, layout) {
 
+  browser()
   manual_range <- if (is.null(self$range)) 0 else self$range
 
-  data %>%
-    group_by(group, PANEL) %>%
+  justgroups <- data %>%
+    select(PANEL, group) %>%
+    distinct()
+
+  out_dt <- data %>%
+    group_by(PANEL) %>%
     summarize(x = .compute_midpoint(x),
               miny = min(y, na.rm = TRUE),
               maxy = max(y, na.rm = TRUE),
@@ -44,10 +49,12 @@ compute_uniformpanel <- function (self, data, params, layout) {
            expansion = (maxrange - range) / 2,
            miny = miny - expansion,
            maxy = maxy + expansion) %>%
-    select(x, group, PANEL, miny, maxy) %>%
-    tidyr::pivot_longer(cols = c(4:5),
+    select(x, PANEL, miny, maxy) %>%
+    tidyr::pivot_longer(cols = c(3:4),
                         values_to = 'y') %>%
-    select(x, y, group, PANEL)
+    select(x, y, PANEL)
+
+  left_join(out_dt, justgroups, by = 'PANEL')
 }
 
 #' Uniform Panel Geom
