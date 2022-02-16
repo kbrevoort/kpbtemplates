@@ -124,7 +124,10 @@ build_y_grob <- function(plot, w) {
                                    hjust = params$hjust,
                                    vjust = params$vjust,
                                    width = grid::unit(6.5, 'in'),
-                                   padding = if (is.null(params$margin)) margin(0, 0, 0, 0) else params$margin,
+                                   padding = margin(t = 10,
+                                                    b = 0,
+                                                    r = 0,
+                                                    l = 0),
                                    gp = params2gp(params,
                                                   plot$theme$text$size))
 }

@@ -2,7 +2,7 @@
 #'
 #' Takes a character string that is to appear as notes below a graph and places
 #' line breaks at appropriate places to wrap the line to conform to the appropriate
-#' width biven the supplied font size.
+#' width given the supplied font size.
 #' @param text Character scalar with the text to be included.
 #' @param width Numeric scalar giving the alloted width for the viewport
 #' @param unit Character scalar giving the units in which the width is expressed
@@ -137,7 +137,7 @@ create_noteGrob <- function(note_text, gp, as_textGrob = FALSE) {
 }
 
 preDrawDetails.noteGrob <- function(x) {
-   browser()
+   #browser()
 #   h <- convertHeight(unit(1, "snpc"), "mm", valueOnly=TRUE)
 #   fs <- rescale(h, to=c(18, 7), from=c(120, 20))
 #   pushViewport(viewport(gp = gpar(fontsize = fs)))

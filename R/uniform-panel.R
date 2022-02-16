@@ -28,7 +28,6 @@ stat_uniformpanel <- function(data = NULL,
 
 compute_uniformpanel <- function (self, data, params, layout) {
 
-  browser()
   manual_range <- if (is.null(self$range)) 0 else self$range
 
   justgroups <- data %>%
